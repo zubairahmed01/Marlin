@@ -44,6 +44,10 @@
 #include "utility.h"
 #include "serial.h"
 
+extern char TFTpausingFlag ;
+
+
+
 void idle(
   #if ENABLED(ADVANCED_PAUSE_FEATURE)
     bool no_stepper_sleep = false  // pass true to keep steppers from disabling on timeout

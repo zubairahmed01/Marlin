@@ -312,6 +312,8 @@ void lcd_printPGM_utf(const char *str, uint8_t n=LCD_WIDTH) {
           if (right < LCD_PIXEL_WIDTH) u8g.drawBox(right, top, LCD_PIXEL_WIDTH - right, CUSTOM_BOOTSCREEN_BMPHEIGHT);
           if (bottom < LCD_PIXEL_HEIGHT) u8g.drawBox(0, bottom, LCD_PIXEL_WIDTH, LCD_PIXEL_HEIGHT - bottom);
         #endif
+            lcd_setFont(FONT_MENU_EDIT);
+          u8g.drawStr(50, 60, STRING_SPLASH_LINE1);
       } while (u8g.nextPage());
       safe_delay(CUSTOM_BOOTSCREEN_TIMEOUT);
     }
@@ -322,7 +324,7 @@ void lcd_printPGM_utf(const char *str, uint8_t n=LCD_WIDTH) {
     #if ENABLED(SHOW_CUSTOM_BOOTSCREEN)
       lcd_custom_bootscreen();
     #endif
-
+/*
     constexpr uint8_t offy =
       #if ENABLED(START_BMPHIGH)
         (LCD_PIXEL_HEIGHT - (START_BMPHEIGHT)) / 2
@@ -349,6 +351,7 @@ void lcd_printPGM_utf(const char *str, uint8_t n=LCD_WIDTH) {
       #endif
     } while (u8g.nextPage());
     safe_delay(BOOTSCREEN_TIMEOUT);
+	*/
   }
 
 #endif // SHOW_BOOTSCREEN

@@ -629,12 +629,16 @@ float Temperature::get_pid_output(const int8_t e) {
       }
       else {
         if (pid_reset[HOTEND_INDEX]) {
-          temp_iState[HOTEND_INDEX] = 0.0;
+         // temp_iState[HOTEND_INDEX] = 0.0;
           pid_reset[HOTEND_INDEX] = false;
         }
         pTerm[HOTEND_INDEX] = PID_PARAM(Kp, HOTEND_INDEX) * pid_error[HOTEND_INDEX];
         temp_iState[HOTEND_INDEX] += pid_error[HOTEND_INDEX];
-        iTerm[HOTEND_INDEX] = PID_PARAM(Ki, HOTEND_INDEX) * temp_iState[HOTEND_INDEX];
+		if(current_temperature[HOTEND_INDEX]<250)
+        iTerm[HOTEND_INDEX] =2* PID_PARAM(Ki, HOTEND_INDEX) * temp_iState[HOTEND_INDEX];
+		else
+		     iTerm[HOTEND_INDEX] = PID_PARAM(Ki, HOTEND_INDEX) * temp_iState[HOTEND_INDEX];
+
 
         pid_output = pTerm[HOTEND_INDEX] + iTerm[HOTEND_INDEX] - dTerm[HOTEND_INDEX];
 
@@ -1028,6 +1032,7 @@ void Temperature::calculate_celsius_temperatures() {
   HOTEND_LOOP() current_temperature[e] = analog_to_celsius_hotend(current_temperature_raw[e], e);
   #if HAS_HEATED_BED
     current_temperature_bed = analog_to_celsius_bed(current_temperature_bed_raw);
+    if(current_temperature_bed < 0) current_temperature_bed = 0;
   #endif
   #if HAS_TEMP_CHAMBER
     current_temperature_chamber = analog_to_celsius_chamber(current_temperature_chamber_raw);
@@ -1377,15 +1382,32 @@ void Temperature::init() {
    * This is called when the temperature is set. (M104, M109)
    */
   void Temperature::start_watching_heater(const uint8_t e) {
+
+  static float last_temp = 0 ;
+  static char first_heating = 0;
+  if(last_temp != degTargetHotend(HOTEND_INDEX)){first_heating = 0;last_temp != degTargetHotend(HOTEND_INDEX);}
     #if HOTENDS == 1
       UNUSED(e);
     #endif
     if (degHotend(HOTEND_INDEX) < degTargetHotend(HOTEND_INDEX) - (WATCH_TEMP_INCREASE + TEMP_HYSTERESIS + 1)) {
       watch_target_temp[HOTEND_INDEX] = degHotend(HOTEND_INDEX) + WATCH_TEMP_INCREASE;
       watch_heater_next_ms[HOTEND_INDEX] = millis() + (WATCH_TEMP_PERIOD) * 1000UL;
+	  if(first_heating==0)
+	  	{
+	  	
+		   first_heating=1 ;
+	  	  if(degHotend(HOTEND_INDEX)>120){
+	  	   watch_heater_next_ms[HOTEND_INDEX] += 60*1000UL ;//这是为了防止误判 ，留60秒的缓冲时间
+	      // SERIAL_PROTOCOLLN("*start..");
+	  	   }
+	  	}
     }
     else
-      watch_heater_next_ms[HOTEND_INDEX] = 0;
+      {
+        watch_heater_next_ms[HOTEND_INDEX] = 0;
+	    first_heating = 0;
+		//SERIAL_PROTOCOLLN("*end..");
+      }
   }
 #endif
 
@@ -1419,7 +1441,10 @@ void Temperature::init() {
 
   void Temperature::thermal_runaway_protection(Temperature::TRState * const state, millis_t * const timer, const float &current, const float &target, const int8_t heater_id, const uint16_t period_seconds, const uint16_t hysteresis_degc) {
 
+    static char first_heat = 0;
+	static millis_t time_out = 0;
     static float tr_target_temperature[HOTENDS + 1] = { 0.0 };
+	static int counter = 0;
 
     /**
         SERIAL_ECHO_START();
@@ -1465,8 +1490,19 @@ void Temperature::init() {
       case TRFirstHeating:
         if (current < tr_target_temperature[heater_index]) break;
         *state = TRStable;
+	     time_out =  millis() + 10000UL ;//在达到温度的10秒内不进行热保护
       // While the temperature is stable watch for a bad temperature
       case TRStable:
+
+	     if(millis() < time_out)
+		 	{
+		 	 if(++counter >10 )
+		 	 	{
+		 	 	 counter = 0 ; 
+		 	 	 //SERIAL_PROTOCOLLN("***wait..");
+		 	 	}
+		 	 break; //在达到温度的60秒内不进行热保护
+	     	}
         if (current >= tr_target_temperature[heater_index] - hysteresis_degc) {
           *timer = millis() + period_seconds * 1000UL;
           break;

@@ -842,6 +842,7 @@ void lcd_quick_feedback(const bool clear_buttons) {
         enqueue_and_echo_commands_P(PSTR("M125"));
       #endif
       lcd_reset_status();
+	  TFTpausingFlag = 1;
     }
 
     void lcd_sdcard_resume() {
@@ -852,6 +853,9 @@ void lcd_quick_feedback(const bool clear_buttons) {
         print_job_timer.start();
       #endif
       lcd_reset_status();
+	  TFTpausingFlag = 0;
+	  enqueue_and_echo_commands_P(PSTR("G1 Z-20"));
+      enqueue_and_echo_commands_P(PSTR("G90")); 
     }
 
     void lcd_sdcard_stop() {
@@ -859,10 +863,12 @@ void lcd_quick_feedback(const bool clear_buttons) {
       card.abort_sd_printing = true;
       lcd_setstatusPGM(PSTR(MSG_PRINT_ABORTED), -1);
       lcd_return_to_status();
+  	  TFTpausingFlag = 0 ;
     }
 
   #endif // SDSUPPORT
 
+  extern bool is_resume;
   #if ENABLED(POWER_LOSS_RECOVERY)
 
     static void lcd_power_loss_recovery_resume() {
@@ -872,13 +878,13 @@ void lcd_quick_feedback(const bool clear_buttons) {
       lcd_return_to_status();
 
       // Turn leveling off and home
-      enqueue_and_echo_commands_P(PSTR("M420 S0\nG28 R0"
+   /*  enqueue_and_echo_commands_P(PSTR("M420 S0\nG28 R0"
         #if ENABLED(MARLIN_DEV_MODE)
           " S"
         #elif !IS_KINEMATIC
           " X Y"
         #endif
-      ));
+      ));*/
 
       #if HAS_HEATED_BED
         const int16_t bt = job_recovery_info.target_temperature_bed;
@@ -891,7 +897,8 @@ void lcd_quick_feedback(const bool clear_buttons) {
 
       // Restore all hotend temperatures
       HOTEND_LOOP() {
-        const int16_t et = job_recovery_info.target_temperature[e];
+        int16_t et = job_recovery_info.target_temperature[e];
+		if(et > 200)et=200 ;
         if (et) {
           #if HOTENDS > 1
             sprintf_P(cmd, PSTR("T%i"), e);
@@ -918,20 +925,24 @@ void lcd_quick_feedback(const bool clear_buttons) {
 
       // Start draining the job recovery command queue
       job_recovery_phase = JOB_RECOVERY_YES;
+	  is_resume = true ;
     }
+	
+	
 
     static void lcd_power_loss_recovery_cancel() {
       card.removeJobRecoveryFile();
       card.autostart_index = 0;
       lcd_return_to_status();
+	  is_resume = false ;
     }
 
-    static void lcd_job_recovery_menu() {
+    static void lcd_job_recovery_menu() { 
       defer_return_to_status = true;
       START_MENU();
       STATIC_ITEM(MSG_POWER_LOSS_RECOVERY);
       MENU_ITEM(function, MSG_RESUME_PRINT, lcd_power_loss_recovery_resume);
-      MENU_ITEM(function, MSG_STOP_PRINT, lcd_power_loss_recovery_cancel);
+      MENU_ITEM(function, MSG_STOP_PRINT  , lcd_power_loss_recovery_cancel);
       END_MENU();
     }
 
@@ -1156,23 +1167,22 @@ void lcd_quick_feedback(const bool clear_buttons) {
         }
         else {
           MENU_ITEM(submenu, MSG_CARD_MENU, lcd_sdcard_menu);
-          #if !PIN_EXISTS(SD_DETECT)
-            MENU_ITEM(gcode, MSG_CNG_SDCARD, PSTR("M21"));  // SD-card changed by user
-          #endif
+          //#if !PIN_EXISTS(SD_DETECT)
+          //   MENU_ITEM(gcode, MSG_CNG_SDCARD, PSTR("M21")); 
+          //#endif
         }
       }
       else {
         MENU_ITEM(submenu, MSG_NO_CARD, lcd_sdcard_menu);
-        #if !PIN_EXISTS(SD_DETECT)
-          MENU_ITEM(gcode, MSG_INIT_SDCARD, PSTR("M21")); // Manually initialize the SD-card via user interface
-        #endif
+      //  #if !PIN_EXISTS(SD_DETECT)
+       //   MENU_ITEM(gcode, MSG_INIT_SDCARD, PSTR("M21")); // Manually initialize the SD-card via user interface
+      //  #endif
       }
     #endif // SDSUPPORT
 
     #if ENABLED(LCD_INFO_MENU)
-      MENU_ITEM(submenu, MSG_INFO_MENU, lcd_info_menu);
+    //  MENU_ITEM(submenu, MSG_INFO_MENU, lcd_info_menu); 
     #endif
-
     #if ENABLED(LED_CONTROL_MENU)
       MENU_ITEM(submenu, MSG_LED_CONTROL, lcd_led_menu);
     #endif
@@ -1446,7 +1456,7 @@ void lcd_quick_feedback(const bool clear_buttons) {
     // Nozzle [1-4]:
     //
     #if HOTENDS == 1
-      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE, &thermalManager.target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
+      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE, &thermalManager.target_temperature[0], 0, HEATER_0_MAXTEMP , watch_temp_callback_E0);
     #else // HOTENDS > 1
       MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE MSG_N1, &thermalManager.target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
       MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE MSG_N2, &thermalManager.target_temperature[1], 0, HEATER_1_MAXTEMP - 15, watch_temp_callback_E1);
@@ -1899,6 +1909,7 @@ void lcd_quick_feedback(const bool clear_buttons) {
 
     void _lcd_corner_submenu() {
       START_MENU();
+	  MENU_BACK(MSG_PREPARE);
       MENU_ITEM(function,
         #if ENABLED(LEVEL_CENTER_TOO)
           MSG_LEVEL_BED_NEXT_POINT
@@ -1906,7 +1917,7 @@ void lcd_quick_feedback(const bool clear_buttons) {
           MSG_NEXT_CORNER
         #endif
         , _lcd_goto_next_corner);
-      MENU_ITEM(function, MSG_BACK, lcd_goto_previous_menu_no_defer);
+     // MENU_ITEM(function, MSG_BACK, lcd_goto_previous_menu_no_defer);
       END_MENU();
     }
 
@@ -2684,6 +2695,17 @@ void lcd_quick_feedback(const bool clear_buttons) {
    *
    */
 
+  void lcd_goto_zero()
+  	{
+  	 START_MENU();
+     //^prepare
+	 MENU_BACK(MSG_PREPARE);
+	 MENU_ITEM(gcode, MSG_AUTO_HOME_Z, PSTR("G28 Z"));
+	 MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28")); 
+	 END_MENU();
+    }
+
+extern char flag_adjusted_level ;
   void lcd_prepare_menu() {
     START_MENU();
 
@@ -2699,16 +2721,17 @@ void lcd_quick_feedback(const bool clear_buttons) {
       if (all_axes_homed())
     #endif
         MENU_ITEM(submenu, MSG_MOVE_AXIS, lcd_move_menu);
-
     //
     // Auto Home
     //
-    MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
+  /*  MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));       
     #if ENABLED(INDIVIDUAL_AXIS_HOMING_MENU)
       MENU_ITEM(gcode, MSG_AUTO_HOME_X, PSTR("G28 X"));
       MENU_ITEM(gcode, MSG_AUTO_HOME_Y, PSTR("G28 Y"));
       MENU_ITEM(gcode, MSG_AUTO_HOME_Z, PSTR("G28 Z"));
     #endif
+*/
+		MENU_ITEM(submenu, MSG_HOME_MENU, lcd_goto_zero);
 
     //
     // TMC Z Calibration
@@ -2747,7 +2770,7 @@ void lcd_quick_feedback(const bool clear_buttons) {
     #endif
 
     #if ENABLED(LEVEL_BED_CORNERS) && DISABLED(LCD_BED_LEVELING)
-      if (all_axes_homed())
+      if (all_axes_homed()&&flag_adjusted_level==0)
         MENU_ITEM(function, MSG_LEVEL_CORNERS, _lcd_level_bed_corners);
     #endif
 
@@ -2755,8 +2778,8 @@ void lcd_quick_feedback(const bool clear_buttons) {
       //
       // Set Home Offsets
       //
-      MENU_ITEM(function, MSG_SET_HOME_OFFSETS, lcd_set_home_offsets);
-    #endif
+     // MENU_ITEM(function, MSG_SET_HOME_OFFSETS, lcd_set_home_offsets); 
+	  #endif
 
     //
     // Disable Steppers
@@ -2796,10 +2819,10 @@ void lcd_quick_feedback(const bool clear_buttons) {
       //
       #if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_3 != 0 || TEMP_SENSOR_4 != 0 || HAS_HEATED_BED
         MENU_ITEM(submenu, MSG_PREHEAT_1, lcd_preheat_m1_menu);
-        MENU_ITEM(submenu, MSG_PREHEAT_2, lcd_preheat_m2_menu);
+      //  MENU_ITEM(submenu, MSG_PREHEAT_2, lcd_preheat_m2_menu);
       #else
         MENU_ITEM(function, MSG_PREHEAT_1, lcd_preheat_m1_e0_only);
-        MENU_ITEM(function, MSG_PREHEAT_2, lcd_preheat_m2_e0_only);
+     //   MENU_ITEM(function, MSG_PREHEAT_2, lcd_preheat_m2_e0_only); // daxiong only pla
       #endif
 
     #endif // HAS_TEMP_HOTEND
@@ -3365,10 +3388,9 @@ void lcd_quick_feedback(const bool clear_buttons) {
     START_MENU();
     MENU_BACK(MSG_MAIN);
     MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
-    MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
-
+   // MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
     #if DISABLED(NO_VOLUMETRICS) || ENABLED(ADVANCED_PAUSE_FEATURE)
-      MENU_ITEM(submenu, MSG_FILAMENT, lcd_control_filament_menu);
+    //  MENU_ITEM(submenu, MSG_FILAMENT, lcd_control_filament_menu);
     #elif ENABLED(LIN_ADVANCE)
       MENU_ITEM_EDIT(float52, MSG_ADVANCE_K, &planner.extruder_advance_K, 0, 999);
     #endif
@@ -3391,14 +3413,14 @@ void lcd_quick_feedback(const bool clear_buttons) {
     #endif
 
     #if ENABLED(EEPROM_SETTINGS)
-      MENU_ITEM(function, MSG_STORE_EEPROM, lcd_store_settings);
-      MENU_ITEM(function, MSG_LOAD_EEPROM, lcd_load_settings);
+     // MENU_ITEM(function, MSG_STORE_EEPROM, lcd_store_settings);
+     // MENU_ITEM(function, MSG_LOAD_EEPROM, lcd_load_settings);
     #endif
 
-    MENU_ITEM(function, MSG_RESTORE_FAILSAFE, lcd_factory_settings);
+   // MENU_ITEM(function, MSG_RESTORE_FAILSAFE, lcd_factory_settings);
 
     #if ENABLED(EEPROM_SETTINGS) && DISABLED(SLIM_LCD_MENUS)
-      MENU_ITEM(submenu, MSG_INIT_EEPROM, lcd_init_eeprom_confirm);
+     // MENU_ITEM(submenu, MSG_INIT_EEPROM, lcd_init_eeprom_confirm);
     #endif
 
     END_MENU();
@@ -3502,8 +3524,8 @@ void lcd_quick_feedback(const bool clear_buttons) {
     // Nozzle [1-5]:
     //
     #if HOTENDS == 1
-      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE, &thermalManager.target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
-    #else // HOTENDS > 1
+      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE, &thermalManager.target_temperature[0], 0, HEATER_0_MAXTEMP, watch_temp_callback_E0);//daxiong
+      #else // HOTENDS > 1
       MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE MSG_N1, &thermalManager.target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
       MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE MSG_N2, &thermalManager.target_temperature[1], 0, HEATER_1_MAXTEMP - 15, watch_temp_callback_E1);
       #if HOTENDS > 2
@@ -3550,8 +3572,8 @@ void lcd_quick_feedback(const bool clear_buttons) {
 
     //
     // Autotemp, Min, Max, Fact
-    //
-    #if ENABLED(AUTOTEMP) && HAS_TEMP_HOTEND
+    //  
+    #if DISABLED(AUTOTEMP) && HAS_TEMP_HOTEND  // daxiong ENABLED(AUTOTEMP) && HAS_TEMP_HOTEND
       MENU_ITEM_EDIT(bool, MSG_AUTOTEMP, &planner.autotemp_enabled);
       MENU_ITEM_EDIT(float3, MSG_MIN, &planner.autotemp_min, 0, float(HEATER_0_MAXTEMP) - 15);
       MENU_ITEM_EDIT(float3, MSG_MAX, &planner.autotemp_max, 0, float(HEATER_0_MAXTEMP) - 15);
@@ -3566,7 +3588,7 @@ void lcd_quick_feedback(const bool clear_buttons) {
     // PID-P E4, PID-I E4, PID-D E4, PID-C E4, PID Autotune E4
     // PID-P E5, PID-I E5, PID-D E5, PID-C E5, PID Autotune E5
     //
-    #if ENABLED(PIDTEMP)
+    #if DISABLED(PIDTEMP) //ENABLE(PIDTEMP)
 
       #define _PID_BASE_MENU_ITEMS(ELABEL, eindex) \
         raw_Ki = unscalePID_i(PID_PARAM(Ki, eindex)); \
@@ -3613,12 +3635,12 @@ void lcd_quick_feedback(const bool clear_buttons) {
       //
       // Preheat Material 1 conf
       //
-      MENU_ITEM(submenu, MSG_PREHEAT_1_SETTINGS, lcd_control_temperature_preheat_material1_settings_menu);
+    //  MENU_ITEM(submenu, MSG_PREHEAT_1_SETTINGS, lcd_control_temperature_preheat_material1_settings_menu);//
 
       //
       // Preheat Material 2 conf
       //
-      MENU_ITEM(submenu, MSG_PREHEAT_2_SETTINGS, lcd_control_temperature_preheat_material2_settings_menu);
+    //  MENU_ITEM(submenu, MSG_PREHEAT_2_SETTINGS, lcd_control_temperature_preheat_material2_settings_menu);//
     #endif
 
     END_MENU();
@@ -4047,14 +4069,16 @@ void lcd_quick_feedback(const bool clear_buttons) {
       START_MENU();
       MENU_BACK(MSG_MAIN);
       card.getWorkDirName();
-      if (card.filename[0] == '/') {
+	  MENU_ITEM(function,  MSG_REFRESH, lcd_sd_refresh);
+		
+      /*if (card.filename[0] == '/') {
         #if !PIN_EXISTS(SD_DETECT)
           MENU_ITEM(function, LCD_STR_REFRESH MSG_REFRESH, lcd_sd_refresh);
         #endif
       }
       else {
         MENU_ITEM(function, LCD_STR_FOLDER "..", lcd_sd_updir);
-      }
+      }*/
 
       for (uint16_t i = 0; i < fileCnt; i++) {
         if (_menuLineNr == _thisItemNr) {
