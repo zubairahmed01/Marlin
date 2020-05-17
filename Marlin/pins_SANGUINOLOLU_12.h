@@ -31,6 +31,7 @@
  *  MELZI_MAKR3D
  *  SANGUINOLOLU_12
  *  STB_11
+ *  ANYCUBIC_M7
  */
 
 #ifndef BOARD_NAME

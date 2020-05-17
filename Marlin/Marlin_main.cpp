@@ -406,6 +406,15 @@ uint8_t axis_homed, axis_known_position; // = 0
  */
 static long gcode_N, gcode_LastN, Stopped_gcode_LastN = 0;
 
+bool is_resume = false ;
+char flag_adjusted_level = 0 ;
+
+
+char TFTpausingFlag=0;//for return a flag that buffer carry out
+
+
+
+
 /**
  * GCode Command Queue
  * A simple ring buffer of BUFSIZE command strings.
@@ -2988,8 +2997,11 @@ static void do_homing_move(const AxisEnum axis, const float distance, const floa
     planner.buffer_line(delta[A_AXIS], delta[B_AXIS], delta[C_AXIS], current_position[E_AXIS], fr_mm_s ? fr_mm_s : homing_feedrate(axis), active_extruder);
   #else
     sync_plan_position();
+  if(axis != Z_AXIS ||(axis == Z_AXIS && is_resume==false )) //daxiong dnot go z_home
+  	{
     current_position[axis] = distance; // Set delta/cartesian axes directly
     planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], fr_mm_s ? fr_mm_s : homing_feedrate(axis), active_extruder);
+  	}
   #endif
 
   planner.synchronize();
@@ -3000,7 +3012,10 @@ static void do_homing_move(const AxisEnum axis, const float distance, const floa
       if (axis == Z_AXIS) probing_pause(false);
     #endif
 
-    endstops.validate_homing_move();
+	if(axis != Z_AXIS ||(axis == Z_AXIS && is_resume==false )) //daxiong dnot go z_home
+	  {
+       endstops.validate_homing_move();
+	  }
 
     // Re-enable stealthChop if used. Disable diag1 pin on driver.
     #if ENABLED(SENSORLESS_HOMING)
@@ -3355,6 +3370,8 @@ inline void gcode_G0_G1(
     bool fast_move=false
   #endif
 ) {
+	  flag_adjusted_level = 1 ;
+
   if (IsRunning() && G0_G1_CONDITION) {
     gcode_get_destination(); // For X Y Z E F
 
@@ -4165,7 +4182,7 @@ inline void gcode_G28(const bool always_home_all) {
           (parser.seenval('R') ? parser.value_linear_units() : Z_HOMING_HEIGHT)
     );
 
-    if (z_homing_height && (home_all || homeX || homeY)) {
+    if (is_resume==false&&z_homing_height && (home_all || homeX || homeY)) {
       // Raise Z before homing any other axes and z is not already high enough (never lower z)
       destination[Z_AXIS] = z_homing_height;
       if (destination[Z_AXIS] > current_position[Z_AXIS]) {
@@ -4175,7 +4192,7 @@ inline void gcode_G28(const bool always_home_all) {
             SERIAL_ECHOLNPAIR("Raise Z (before homing) to ", destination[Z_AXIS]);
         #endif
 
-        do_blocking_move_to_z(destination[Z_AXIS]);
+        do_blocking_move_to_z(destination[Z_AXIS]); 
       }
     }
 
@@ -4293,6 +4310,13 @@ inline void gcode_G28(const bool always_home_all) {
   #if ENABLED(DEBUG_LEVELING_FEATURE)
     if (DEBUGGING(LEVELING)) SERIAL_ECHOLNPGM("<<< G28");
   #endif
+
+	if(is_resume==true)
+	{
+	  homeaxis(Z_AXIS);
+	  is_resume=false ;
+	}
+  flag_adjusted_level = 0 ;
 } // G28
 
 void home_all_axes() { gcode_G28(true); }
@@ -7941,7 +7965,8 @@ inline void gcode_M104() {
   #endif
 
   if (parser.seenval('S')) {
-    const int16_t temp = parser.value_celsius();
+     int16_t temp = parser.value_celsius();
+	if(temp>HEATER_0_MAXTEMP)temp = HEATER_0_MAXTEMP;
     thermalManager.setTargetHotend(temp, target_extruder);
 
     #if ENABLED(DUAL_X_CARRIAGE)
@@ -14650,13 +14675,27 @@ void setup() {
   #endif
 
   #if ENABLED(POWER_LOSS_RECOVERY)
-    check_print_job_recovery();
+    check_print_job_recovery(); //查看是否有断电续打的文件
   #endif
 
   #if ENABLED(USE_WATCHDOG)
     watchdog_init();
   #endif
 }
+
+
+void pauseCMDsend()
+{
+static char temp=0;
+ if(commands_in_queue < BUFSIZE)
+ { 
+   temp++;
+   if(temp==1)enqueue_and_echo_commands_P(PSTR("G91"));
+   if(temp==2){enqueue_and_echo_commands_P(PSTR("G1 Z+20")); TFTpausingFlag = 3 ;temp=0;} 
+ }
+}
+
+
 
 /**
  * The main Marlin program loop
@@ -14670,6 +14709,12 @@ void setup() {
  *  - Call LCD update
  */
 void loop() {
+
+
+//暂停 抬高的步�?//1,首先停止SD卡，不允许读新的指令
+//2，等待缓存区的指令执行结�?，然后嵌入G91 Z20.0 两个指令
+  if(TFTpausingFlag==2)pauseCMDsend();//when pause,i need rase z axis,but if i use enquecommand_P,it maybe lose cmd,very dangerous,so i need sent cmd one by one
+
 
   #if ENABLED(SDSUPPORT)
 
@@ -14691,9 +14736,16 @@ void loop() {
           for (uint8_t i = 0; i < FAN_COUNT; i++) fanSpeeds[i] = 0;
         #endif
         wait_for_heatup = false;
+		
+        enqueue_and_echo_commands_P(PSTR("G91"));
+		enqueue_and_echo_commands_P(PSTR("G1 E-5 F1000")); //缩一下料
+		enqueue_and_echo_commands_P(PSTR("G1 Z20 F6000")); //抬高20mm
+		enqueue_and_echo_commands_P(PSTR("M84")); //关闭步进电机
+		
         #if ENABLED(POWER_LOSS_RECOVERY)
           card.removeJobRecoveryFile();
         #endif
+
       }
     #endif
 
@@ -14735,7 +14787,7 @@ void loop() {
       else {
         process_next_command();
         #if ENABLED(POWER_LOSS_RECOVERY)
-          if (card.cardOK && card.sdprinting) save_job_recovery_info();
+          if (card.cardOK && card.sdprinting) save_job_recovery_info(current_position[2]);
         #endif
       }
 
@@ -14753,4 +14805,11 @@ void loop() {
   }
   endstops.event_handler();
   idle();
+
+
+    if(TFTpausingFlag==1) //when pause sd printing,send "ok"to tft as read buffer carry out
+  {
+    planner.synchronize();
+    TFTpausingFlag=2;
+  } 
 }

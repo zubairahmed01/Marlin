@@ -213,8 +213,9 @@
   #include "pins_STB_11.h"            // ATmega644P, ATmega1284P                    env:sanguino_atmega644p env:sanguino_atmega1284p
 #elif MB(AZTEEG_X1)
   #include "pins_AZTEEG_X1.h"         // ATmega644P, ATmega1284P                    env:sanguino_atmega644p env:sanguino_atmega1284p
+#elif MB(ANYCUBIC_Mega_Zero)
+  #include "pins_ANYCUBIC_M7.h"    // ATmega644P, ATmega1284P                    env:sanguino_atmega644p env:sanguino_atmega1284p
 
-//
 // Other ATmega644P, ATmega644, ATmega1284P
 //
 
