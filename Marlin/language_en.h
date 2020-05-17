@@ -41,7 +41,7 @@
 #endif
 
 #ifndef WELCOME_MSG
-  #define WELCOME_MSG                         MACHINE_NAME _UxGT(" Ready.")
+  #define WELCOME_MSG                         _UxGT(" Ready.")
 #endif
 #ifndef MSG_BACK
   #define MSG_BACK                            _UxGT("Back")
@@ -73,8 +73,13 @@
 #ifndef MSG_PROGRESS_BAR_TEST
   #define MSG_PROGRESS_BAR_TEST               _UxGT("Progress Bar Test")
 #endif
+
+#ifndef MSG_HOME_MENU
+  #define MSG_HOME_MENU                        _UxGT("Home")
+#endif
+
 #ifndef MSG_AUTO_HOME
-  #define MSG_AUTO_HOME                       _UxGT("Auto home")
+  #define MSG_AUTO_HOME                       _UxGT("Home All")
 #endif
 #ifndef MSG_AUTO_HOME_X
   #define MSG_AUTO_HOME_X                     _UxGT("Home X")
