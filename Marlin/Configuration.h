@@ -98,7 +98,9 @@
 #endif
 
 // Show the bitmap in Marlin/_Statusscreen.h on the status screen.
-#define CUSTOM_STATUS_SCREEN_IMAGE
+#if DISABLED(KAD_SKR_BED)
+  #define CUSTOM_STATUS_SCREEN_IMAGE
+#endif
 
 // @section machine
 
@@ -110,7 +112,13 @@
  *
  * :[-1, 0, 1, 2, 3, 4, 5, 6, 7]
  */
-#define SERIAL_PORT 0
+//#define SERIAL_PORT 0
+#if ENABLED(KAD_SKR_MINI)
+  #define SERIAL_PORT 2
+  #define SERIAL_PORT_2 -1
+#else
+  #define SERIAL_PORT 0
+#endif
 
 /**
  * Select a secondary serial port on the board to use for communication with the host.
@@ -134,7 +142,11 @@
 
 // Choose the name from boards.h that matches your setup
 #ifndef MOTHERBOARD
-  #define MOTHERBOARD BOARD_MELZI_CREALITY
+  #if ENABLED(KAD_SKR_MINI)
+    #define MOTHERBOARD BOARD_BTT_SKR_MINI_E3_V2_0
+  #else
+    #define MOTHERBOARD BOARD_MELZI_CREALITY
+  #endif
 #endif
 
 // Name displayed in the LCD "Ready" message and Info menu
@@ -431,7 +443,11 @@
 #define TEMP_SENSOR_5 0
 #define TEMP_SENSOR_6 0
 #define TEMP_SENSOR_7 0
+#if BOTH(KAD_SKR_MINI, KAD_SKR_BED)
+#define TEMP_SENSOR_BED 1
+#else
 #define TEMP_SENSOR_BED 0
+#endif
 #define TEMP_SENSOR_PROBE 0
 #define TEMP_SENSOR_CHAMBER 0
 
@@ -535,6 +551,9 @@
  * the issues involved, don't use bed PID until someone else verifies that your hardware works.
  */
 //#define PIDTEMPBED
+#if BOTH(KAD_SKR_MINI, KAD_SKR_BED)
+  #define PIDTEMPBED
+#endif
 
 //#define BED_LIMIT_SWITCHING
 
@@ -706,6 +725,17 @@
 //#define E5_DRIVER_TYPE A4988
 //#define E6_DRIVER_TYPE A4988
 //#define E7_DRIVER_TYPE A4988
+#if ENABLED(KAD_SKR_MINI)
+  #define X_DRIVER_TYPE  TMC2209
+  #define Y_DRIVER_TYPE  TMC2209
+  #define Z_DRIVER_TYPE  TMC2209
+  #define E0_DRIVER_TYPE TMC2209
+#else
+  #define X_DRIVER_TYPE  A4988
+  #define Y_DRIVER_TYPE  A4988
+  #define Z_DRIVER_TYPE  A4988
+  #define E0_DRIVER_TYPE A4988
+#endif
 
 // Enable this feature if all enabled endstop pins are interrupt-capable.
 // This will remove the need to poll the interrupt pins, saving many CPU cycles.
@@ -882,7 +912,7 @@
  *      - normally-closed switches to GND and D32.
  *      - normally-open switches to 5V and D32.
  */
-#if ENABLED(KAD_BLTOUCH) && DISABLED(KAD_BLTOUCH_ZMIN)
+#if ENABLED(KAD_BLTOUCH) && DISABLED(KAD_BLTOUCH_ZMIN) && DISABLED(KAD_SKR_MINI)
   #define Z_MIN_PROBE_PIN 29 // Pin 29 is the A2 on Melzi board. Usually unused.
 #endif
 
@@ -1300,11 +1330,14 @@
   /**
    * Enable the G26 Mesh Validation Pattern tool.
    */
-  //#define G26_MESH_VALIDATION
+  // KAD: overflow 1.5-2kb
+  // #if ENABLED(KAD_SKR_MINI)
+  //   #define G26_MESH_VALIDATION
+  // #endif
   #if ENABLED(G26_MESH_VALIDATION)
     #define MESH_TEST_NOZZLE_SIZE    0.4  // (mm) Diameter of primary nozzle.
     #define MESH_TEST_LAYER_HEIGHT   0.2  // (mm) Default layer height for the G26 Mesh Validation Tool.
-    #define MESH_TEST_HOTEND_TEMP  205    // (°C) Default nozzle temperature for the G26 Mesh Validation Tool.
+    #define MESH_TEST_HOTEND_TEMP  200    // (°C) Default nozzle temperature for the G26 Mesh Validation Tool.
     #define MESH_TEST_BED_TEMP      60    // (°C) Default bed temperature for the G26 Mesh Validation Tool.
     #define G26_XY_FEEDRATE         20    // (mm/s) Feedrate for XY Moves for the G26 Mesh Validation Tool.
     #define G26_RETRACT_MULTIPLIER   1.0  // G26 Q (retraction) used by default between mesh test elements.
@@ -1550,7 +1583,7 @@
 
 #define PREHEAT_2_LABEL       "PETG"
 #define PREHEAT_2_TEMP_HOTEND 230
-#define PREHEAT_2_TEMP_BED    110
+#define PREHEAT_2_TEMP_BED     70
 #define PREHEAT_2_FAN_SPEED     0 // Value from 0 to 255
 
 /**
@@ -1791,7 +1824,9 @@
  * just remove some extraneous menu items to recover space.
  */
 //#define NO_LCD_MENUS
-#define SLIM_LCD_MENUS
+#if DISABLED(KAD_SKR_MINI)
+  #define SLIM_LCD_MENUS
+#endif
 
 //
 // ENCODER SETTINGS
@@ -1856,7 +1891,9 @@
 // If you have a speaker that can produce tones, enable it here.
 // By default Marlin assumes you have a buzzer with a fixed frequency.
 //
-//#define SPEAKER
+#if ENABLED(KAD_SKR_MINI)
+  #define SPEAKER
+#endif
 
 //
 // The duration and frequency for the UI feedback sound.
@@ -1865,8 +1902,10 @@
 // Note: Test audio output with the G-Code:
 //  M300 S<frequency Hz> P<duration ms>
 //
-//#define LCD_FEEDBACK_FREQUENCY_DURATION_MS 2
-//#define LCD_FEEDBACK_FREQUENCY_HZ 5000
+#if ENABLED(KAD_SKR_MINI)
+  #define LCD_FEEDBACK_FREQUENCY_DURATION_MS 20
+  #define LCD_FEEDBACK_FREQUENCY_HZ 1000
+#endif
 
 //=============================================================================
 //======================== LCD / Controller Selection =========================
@@ -2016,6 +2055,12 @@
 //=========================      (Graphical LCDs)      ========================
 //=============================================================================
 
+#if ENABLED(KAD_SKR_MINI)
+  #define CR10_STOCKDISPLAY
+#else
+  #define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
+#endif
+
 //
 // CONTROLLER TYPE: Graphical 128x64 (DOGM)
 //
@@ -2029,7 +2074,7 @@
 // RepRapDiscount FULL GRAPHIC Smart Controller
 // https://reprap.org/wiki/RepRapDiscount_Full_Graphic_Smart_Controller
 //
-#define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
+//#define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
 
 //
 // ReprapWorld Graphical LCD
@@ -2408,10 +2453,12 @@
 #endif
 
 // Support for Adafruit NeoPixel LED driver
-//#define NEOPIXEL_LED
+#if ENABLED(KAD_SKR_MINI)
+  #define NEOPIXEL_LED
+#endif
 #if ENABLED(NEOPIXEL_LED)
-  #define NEOPIXEL_TYPE   NEO_GRBW // NEO_GRBW / NEO_GRB - four/three channel driver type (defined in Adafruit_NeoPixel.h)
-  #define NEOPIXEL_PIN     4       // LED driving pin
+  #define NEOPIXEL_TYPE   NEO_GRB  // NEO_GRBW / NEO_GRB - four/three channel driver type (defined in Adafruit_NeoPixel.h)
+  //#define NEOPIXEL_PIN     4     // LED driving pin
   //#define NEOPIXEL2_TYPE NEOPIXEL_TYPE
   //#define NEOPIXEL2_PIN    5
   #define NEOPIXEL_PIXELS 30       // Number of LEDs in the strip. (Longest strip when NEOPIXEL2_SEPARATE is disabled.)
