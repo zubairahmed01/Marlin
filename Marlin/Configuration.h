@@ -70,7 +70,11 @@
 // @section info
 
 // Author info of this build printed to the host during boot and M115
-#define STRING_CONFIG_H_AUTHOR "(kad, Anycubic Mega Zero)" // Who made the changes.
+#if ENABLED(KAD_BLTOUCH)
+  #define STRING_CONFIG_H_AUTHOR "(kad, Anycubic Mega Zero BLTouch)" // Who made the changes.
+#else
+  #define STRING_CONFIG_H_AUTHOR "(kad, Anycubic Mega Zero)" // Who made the changes.
+#endif
 //#define CUSTOM_VERSION_FILE Version.h // Path from the root directory (no quotes)
 
 /**
@@ -87,8 +91,11 @@
 // Show the Marlin bootscreen on startup. ** ENABLE FOR PRODUCTION **
 #define SHOW_BOOTSCREEN
 
+// KAD: 500 bytes
+#if DISABLED(KAD_BLTOUCH)
 // Show the bitmap in Marlin/_Bootscreen.h on startup.
-#define SHOW_CUSTOM_BOOTSCREEN
+  #define SHOW_CUSTOM_BOOTSCREEN
+#endif
 
 // Show the bitmap in Marlin/_Statusscreen.h on the status screen.
 #define CUSTOM_STATUS_SCREEN_IMAGE
@@ -488,8 +495,11 @@
 #define PID_K1 0.95      // Smoothing factor within any PID loop
 
 #if ENABLED(PIDTEMP)
-  #define PID_EDIT_MENU         // Add PID editing to the "Advanced Settings" menu. (~700 bytes of PROGMEM)
-  #define PID_AUTOTUNE_MENU     // Add PID auto-tuning to the "Advanced Settings" menu. (~250 bytes of PROGMEM)
+  // KAD: 1100 bytes
+  #if DISABLED(KAD_BLTOUCH)
+    #define PID_EDIT_MENU         // Add PID editing to the "Advanced Settings" menu. (~700 bytes of PROGMEM)
+    #define PID_AUTOTUNE_MENU     // Add PID auto-tuning to the "Advanced Settings" menu. (~250 bytes of PROGMEM)
+  #endif
   //#define PID_PARAMS_PER_HOTEND // Uses separate PID parameters for each extruder (useful for mismatched extruders)
                                   // Set/get with gcode: M301 E[extruder number, 0-2]
 
@@ -699,7 +709,9 @@
 
 // Enable this feature if all enabled endstop pins are interrupt-capable.
 // This will remove the need to poll the interrupt pins, saving many CPU cycles.
-//#define ENDSTOP_INTERRUPTS_FEATURE
+#if ENABLED(KAD_BLTOUCH)
+  #define ENDSTOP_INTERRUPTS_FEATURE
+#endif
 
 /**
  * Endstop Noise Threshold
@@ -827,7 +839,10 @@
  *
  * See https://github.com/synthetos/TinyG/wiki/Jerk-Controlled-Motion-Explained
  */
+ // KAD: 3300 bytes
+// #if DISABLED(KAD_BLTOUCH)
 #define S_CURVE_ACCELERATION
+// #endif
 
 //===========================================================================
 //============================= Z Probe Options =============================
@@ -843,10 +858,14 @@
  * The probe replaces the Z-MIN endstop and is used for Z homing.
  * (Automatically enables USE_PROBE_FOR_Z_HOMING.)
  */
-#define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
+#if ENABLED(KAD_BLTOUCH_ZMIN)
+  #define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
+#endif
 
 // Force the use of the probe for Z-axis homing
-//#define USE_PROBE_FOR_Z_HOMING
+#if ENABLED(KAD_BLTOUCH)
+  #define USE_PROBE_FOR_Z_HOMING
+#endif
 
 /**
  * Z_MIN_PROBE_PIN
@@ -863,7 +882,9 @@
  *      - normally-closed switches to GND and D32.
  *      - normally-open switches to 5V and D32.
  */
-//#define Z_MIN_PROBE_PIN 32 // Pin 32 is the RAMPS default
+#if ENABLED(KAD_BLTOUCH) && DISABLED(KAD_BLTOUCH_ZMIN)
+  #define Z_MIN_PROBE_PIN 29 // Pin 29 is the A2 on Melzi board. Usually unused.
+#endif
 
 /**
  * Probe Type
@@ -901,7 +922,9 @@
 /**
  * The BLTouch probe uses a Hall effect sensor and emulates a servo.
  */
-//#define BLTOUCH
+#if ENABLED(KAD_BLTOUCH)
+  #define BLTOUCH
+#endif
 
 /**
  * Pressure sensor with a BLTouch-like interface
@@ -988,14 +1011,14 @@
  *     |    [-]    |
  *     O-- FRONT --+
  */
-#define NOZZLE_TO_PROBE_OFFSET { -40, -10, 2 }
+#define NOZZLE_TO_PROBE_OFFSET { -37, -13, 0 }
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
 #define PROBING_MARGIN 10
 
 // X and Y axis travel speed (mm/min) between probes
-#define XY_PROBE_SPEED (133*60)
+#define XY_PROBE_SPEED (100*60)
 
 // Feedrate (mm/min) for the first approach when double-probing (MULTIPLE_PROBING == 2)
 #define Z_PROBE_SPEED_FAST HOMING_FEEDRATE_Z
@@ -1041,7 +1064,9 @@
 #define Z_PROBE_OFFSET_RANGE_MAX 20
 
 // Enable the M48 repeatability test to test probe accuracy
-//#define Z_MIN_PROBE_REPEATABILITY_TEST
+#if ENABLED(KAD_BLTOUCH)
+  #define Z_MIN_PROBE_REPEATABILITY_TEST
+#endif
 
 // Before deploy/stow pause for user confirmation
 //#define PAUSE_BEFORE_DEPLOY_STOW
@@ -1124,12 +1149,12 @@
 // @section machine
 
 // The size of the print bed
-#define X_BED_SIZE 220
-#define Y_BED_SIZE 220
+#define X_BED_SIZE 225
+#define Y_BED_SIZE 225
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
-#define X_MIN_POS -9
-#define Y_MIN_POS 0
+#define X_MIN_POS -7
+#define Y_MIN_POS -3
 #define Z_MIN_POS 0
 #define X_MAX_POS X_BED_SIZE
 #define Y_MAX_POS Y_BED_SIZE
@@ -1238,13 +1263,20 @@
 //#define AUTO_BED_LEVELING_LINEAR
 //#define AUTO_BED_LEVELING_BILINEAR
 //#define AUTO_BED_LEVELING_UBL
-#define MESH_BED_LEVELING
+//#define MESH_BED_LEVELING
+
+// KAD: Manual Mesh Bed Leveling is enabled via platformio build flag define
+#if ENABLED(KAD_BLTOUCH)
+  #define AUTO_BED_LEVELING_BILINEAR
+#endif
 
 /**
  * Normally G28 leaves leveling disabled on completion. Enable
  * this option to have G28 restore the prior leveling state.
  */
-#define RESTORE_LEVELING_AFTER_G28
+#if ANY(MESH_BED_LEVELING, AUTO_BED_LEVELING_BILINEAR, AUTO_BED_LEVELING_UBL)
+  #define RESTORE_LEVELING_AFTER_G28
+#endif
 
 /**
  * Enable detailed logging of G28, G29, M48, etc.
@@ -1283,7 +1315,7 @@
 #if EITHER(AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_BILINEAR)
 
   // Set the number of grid points per dimension.
-  #define GRID_MAX_POINTS_X 3
+  #define GRID_MAX_POINTS_X 5
   #define GRID_MAX_POINTS_Y GRID_MAX_POINTS_X
 
   // Probe along the Y axis, advancing X after each column
@@ -1293,7 +1325,7 @@
 
     // Beyond the probed grid, continue the implied tilt?
     // Default is to maintain the height of the nearest edge.
-    //#define EXTRAPOLATE_BEYOND_GRID
+    #define EXTRAPOLATE_BEYOND_GRID
 
     //
     // Experimental Subdivision of the grid by Catmull-Rom method.
@@ -1343,12 +1375,17 @@
  * Add a bed leveling sub-menu for ABL or MBL.
  * Include a guided procedure if manual probing is enabled.
  */
-#define LCD_BED_LEVELING
+#if ANY(MESH_BED_LEVELING, AUTO_BED_LEVELING_BILINEAR, AUTO_BED_LEVELING_UBL)
+  #define LCD_BED_LEVELING
+#endif
 
 #if ENABLED(LCD_BED_LEVELING)
   #define MESH_EDIT_Z_STEP  0.025 // (mm) Step size while manually probing Z axis.
   #define LCD_PROBE_Z_RANGE 4     // (mm) Z Range centered on Z_MIN_POS for LCD Z adjustment
-  #define MESH_EDIT_MENU        // Add a menu to edit mesh points
+  // KAD: 1100 bytes
+  #if DISABLED(KAD_BLTOUCH)
+    #define MESH_EDIT_MENU        // Add a menu to edit mesh points
+  #endif
 #endif
 
 // Add a menu item to move between bed corners for manual bed adjustment
@@ -1387,7 +1424,9 @@
 // - Move the Z probe (or nozzle) to a defined XY point before Z Homing.
 // - Prevent Z homing when the Z probe is outside bed area.
 //
-//#define Z_SAFE_HOMING
+#if ENABLED(KAD_BLTOUCH)
+  #define Z_SAFE_HOMING
+#endif
 
 #if ENABLED(Z_SAFE_HOMING)
   #define Z_SAFE_HOMING_X_POINT X_CENTER  // X point for Z homing
@@ -1806,7 +1845,10 @@
 //
 // Add individual axis homing items (Home X, Home Y, and Home Z) to the LCD menu.
 //
-#define INDIVIDUAL_AXIS_HOMING_MENU
+// KAD: 300 bytes
+#if DISABLED(KAD_BLTOUCH)
+  #define INDIVIDUAL_AXIS_HOMING_MENU
+#endif
 
 //
 // SPEAKER/BUZZER

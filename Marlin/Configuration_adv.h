@@ -708,7 +708,9 @@
    * differs, a mode set eeprom write will be completed at initialization.
    * Use the option below to force an eeprom write to a V3.1 probe regardless.
    */
-  //#define BLTOUCH_SET_5V_MODE
+  #if ENABLED(KAD_BLTOUCH)
+    #define BLTOUCH_SET_5V_MODE
+  #endif
 
   /**
    * Safety: Activate if connecting a probe with an unknown voltage mode.
@@ -1082,13 +1084,17 @@
   #endif
 
   // Include a page of printer information in the LCD Main Menu
-  #define LCD_INFO_MENU
+  #if DISABLED(KAD_BLTOUCH)
+    #define LCD_INFO_MENU
+  #endif
   #if ENABLED(LCD_INFO_MENU)
     //#define LCD_PRINTER_INFO_IS_BOOTSCREEN // Show bootscreen(s) instead of Printer Info pages
   #endif
 
   // BACK menu items keep the highlight at the top
-  #define TURBO_BACK_MENU_ITEM
+  #if DISABLED(KAD_BLTOUCH)
+    #define TURBO_BACK_MENU_ITEM
+  #endif
 
   /**
    * LED Control Menu
@@ -1128,7 +1134,9 @@
 //#define LCD_TIMEOUT_TO_STATUS 15000
 
 // Add an 'M73' G-code to set the current percentage
-#define LCD_SET_PROGRESS_MANUALLY
+#if DISABLED(KAD_BLTOUCH)
+  #define LCD_SET_PROGRESS_MANUALLY
+#endif
 
 // Show the E position (filament used) during printing
 //#define LCD_SHOW_E_TOTAL
@@ -1138,7 +1146,10 @@
 #endif
 
 #if EITHER(SDSUPPORT, LCD_SET_PROGRESS_MANUALLY) && ANY(HAS_MARLINUI_U8GLIB, HAS_MARLINUI_HD44780, IS_TFTGLCD_PANEL)
+  // KAD: 420 bytes
+  // #if DISABLED(KAD_BLTOUCH)
   #define SHOW_REMAINING_TIME         // Display estimated time to completion
+  // #endif
   #if ENABLED(SHOW_REMAINING_TIME)
     #define USE_M73_REMAINING_TIME    // Use remaining time from M73 command instead of estimation
     #define ROTATE_PROGRESS_DISPLAY   // Display (P)rogress, (E)lapsed, and (R)emaining time
@@ -1259,7 +1270,10 @@
   //#define LONG_FILENAME_HOST_SUPPORT
 
   // Enable this option to scroll long filenames in the SD card menu
-  #define SCROLL_LONG_FILENAMES
+  // KAD: 200 bytes
+  #if DISABLED(KAD_BLTOUCH)
+    #define SCROLL_LONG_FILENAMES
+  #endif
 
   // Leave the heaters on after Stop Print (not recommended!)
   //#define SD_ABORT_NO_COOLDOWN
@@ -1616,7 +1630,7 @@
   //#define BABYSTEP_XY                     // Also enable X/Y Babystepping. Not supported on DELTA!
   #define BABYSTEP_INVERT_Z false           // Change if Z babysteps should go the other way
   //#define BABYSTEP_MILLIMETER_UNITS       // Specify BABYSTEP_MULTIPLICATOR_(XY|Z) in mm instead of micro-steps
-  #define BABYSTEP_MULTIPLICATOR_Z  1       // (steps or mm) Steps or millimeter distance for each Z babystep
+  #define BABYSTEP_MULTIPLICATOR_Z  4       // (steps or mm) Steps or millimeter distance for each Z babystep
   #define BABYSTEP_MULTIPLICATOR_XY 1       // (steps or mm) Steps or millimeter distance for each XY babystep
 
   #define DOUBLECLICK_FOR_Z_BABYSTEPPING  // Double-click on the Status Screen for Z Babystepping.
@@ -1631,10 +1645,12 @@
 
   //#define BABYSTEP_DISPLAY_TOTAL          // Display total babysteps since last G28
 
-  //#define BABYSTEP_ZPROBE_OFFSET          // Combine M851 Z and Babystepping
+  #if ENABLED(KAD_BLTOUCH)
+    #define BABYSTEP_ZPROBE_OFFSET          // Combine M851 Z and Babystepping
+  #endif
   #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
     //#define BABYSTEP_HOTEND_Z_OFFSET      // For multiple hotends, babystep relative Z offsets
-    //#define BABYSTEP_ZPROBE_GFX_OVERLAY   // Enable graphical overlay on Z-offset editor
+    #define BABYSTEP_ZPROBE_GFX_OVERLAY   // Enable graphical overlay on Z-offset editor
   #endif
 #endif
 
