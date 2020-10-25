@@ -98,9 +98,9 @@
 #endif
 
 // Show the bitmap in Marlin/_Statusscreen.h on the status screen.
-#if DISABLED(KAD_SKR_BED)
+// #if DISABLED(KAD_SKR_BED)
   #define CUSTOM_STATUS_SCREEN_IMAGE
-#endif
+// #endif
 
 // @section machine
 
@@ -114,8 +114,8 @@
  */
 //#define SERIAL_PORT 0
 #if ENABLED(KAD_SKR_MINI)
-  #define SERIAL_PORT 2
-  #define SERIAL_PORT_2 -1
+  #define SERIAL_PORT -1
+  #define SERIAL_PORT_2 2
 #else
   #define SERIAL_PORT 0
 #endif
@@ -1184,7 +1184,7 @@
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
 #define X_MIN_POS -7
-#define Y_MIN_POS -3
+#define Y_MIN_POS -2
 #define Z_MIN_POS 0
 #define X_MAX_POS X_BED_SIZE
 #define Y_MAX_POS Y_BED_SIZE
