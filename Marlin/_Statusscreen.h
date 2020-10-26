@@ -25,7 +25,7 @@
 //
 // Status Screen Logo bitmap
 //
-#if 0
+#if 1
 #define STATUS_LOGO_WIDTH 58
 
 const unsigned char status_logo_bmp[] PROGMEM = {
