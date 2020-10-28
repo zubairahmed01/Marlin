@@ -888,9 +888,7 @@
  * The probe replaces the Z-MIN endstop and is used for Z homing.
  * (Automatically enables USE_PROBE_FOR_Z_HOMING.)
  */
-#if ENABLED(KAD_BLTOUCH_ZMIN)
-  #define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
-#endif
+//#define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
 
 // Force the use of the probe for Z-axis homing
 #if ENABLED(KAD_BLTOUCH)
@@ -912,7 +910,7 @@
  *      - normally-closed switches to GND and D32.
  *      - normally-open switches to 5V and D32.
  */
-#if ENABLED(KAD_BLTOUCH) && DISABLED(KAD_BLTOUCH_ZMIN) && DISABLED(KAD_SKR_MINI)
+#if ENABLED(KAD_BLTOUCH) && ENABLED(KAD_MELZI) && DISABLED(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN)
   #define Z_MIN_PROBE_PIN 29 // Pin 29 is the A2 on Melzi board. Usually unused.
 #endif
 
@@ -1045,7 +1043,7 @@
 
 // Most probes should stay away from the edges of the bed, but
 // with NOZZLE_AS_PROBE this can be negative for a wider probing area.
-#define PROBING_MARGIN 10
+#define PROBING_MARGIN 15
 
 // X and Y axis travel speed (mm/min) between probes
 #define XY_PROBE_SPEED (133*60)
@@ -1298,6 +1296,8 @@
 // KAD: Manual Mesh Bed Leveling is enabled via platformio build flag define
 #if ENABLED(KAD_BLTOUCH)
   #define AUTO_BED_LEVELING_BILINEAR
+#elif ENABLED(KAD_SKR_MINI)
+  #define MESH_BED_LEVELING
 #endif
 
 /**
