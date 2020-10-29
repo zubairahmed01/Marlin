@@ -710,7 +710,7 @@
    * differs, a mode set eeprom write will be completed at initialization.
    * Use the option below to force an eeprom write to a V3.1 probe regardless.
    */
-  #if ENABLED(KAD_BLTOUCH)
+  #if ENABLED(KAD_BLTOUCH) && DISABLED(KAD_SKR_MINI)
     #define BLTOUCH_SET_5V_MODE
   #endif
 
