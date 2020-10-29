@@ -92,15 +92,13 @@
 #define SHOW_BOOTSCREEN
 
 // KAD: 500 bytes
-#if DISABLED(KAD_BLTOUCH)
+#if DISABLED(KAD_BLTOUCH) || ENABLED(KAD_SKR_MINI_NANOLIB)
 // Show the bitmap in Marlin/_Bootscreen.h on startup.
   #define SHOW_CUSTOM_BOOTSCREEN
 #endif
 
 // Show the bitmap in Marlin/_Statusscreen.h on the status screen.
-// #if DISABLED(KAD_SKR_BED)
-  #define CUSTOM_STATUS_SCREEN_IMAGE
-// #endif
+#define CUSTOM_STATUS_SCREEN_IMAGE
 
 // @section machine
 
@@ -512,7 +510,7 @@
 
 #if ENABLED(PIDTEMP)
   // KAD: 1100 bytes
-  #if DISABLED(KAD_BLTOUCH)
+  #if DISABLED(KAD_BLTOUCH) || ENABLED(KAD_SKR_MINI_NANOLIB)
     #define PID_EDIT_MENU         // Add PID editing to the "Advanced Settings" menu. (~700 bytes of PROGMEM)
     #define PID_AUTOTUNE_MENU     // Add PID auto-tuning to the "Advanced Settings" menu. (~250 bytes of PROGMEM)
   #endif
@@ -910,7 +908,7 @@
  *      - normally-closed switches to GND and D32.
  *      - normally-open switches to 5V and D32.
  */
-#if ENABLED(KAD_BLTOUCH) && ENABLED(KAD_MELZI) && DISABLED(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN)
+#if BOTH(KAD_MELZI, KAD_BLTOUCH) && DISABLED(Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN)
   #define Z_MIN_PROBE_PIN 29 // Pin 29 is the A2 on Melzi board. Usually unused.
 #endif
 
@@ -1213,8 +1211,8 @@
   #define MAX_SOFTWARE_ENDSTOP_Z
 #endif
 
-#if EITHER(MIN_SOFTWARE_ENDSTOPS, MAX_SOFTWARE_ENDSTOPS)
-  //#define SOFT_ENDSTOPS_MENU_ITEM  // Enable/Disable software endstops from the LCD
+#if EITHER(MIN_SOFTWARE_ENDSTOPS, MAX_SOFTWARE_ENDSTOPS) && ENABLED(KAD_SKR_MINI_NANOLIB)
+  #define SOFT_ENDSTOPS_MENU_ITEM  // Enable/Disable software endstops from the LCD
 #endif
 
 /**
@@ -1331,9 +1329,9 @@
    * Enable the G26 Mesh Validation Pattern tool.
    */
   // KAD: overflow 1.5-2kb
-  // #if ENABLED(KAD_SKR_MINI)
-  //   #define G26_MESH_VALIDATION
-  // #endif
+  #if ENABLED(KAD_SKR_MINI_NANOLIB)
+    #define G26_MESH_VALIDATION
+  #endif
   #if ENABLED(G26_MESH_VALIDATION)
     #define MESH_TEST_NOZZLE_SIZE    0.4  // (mm) Diameter of primary nozzle.
     #define MESH_TEST_LAYER_HEIGHT   0.2  // (mm) Default layer height for the G26 Mesh Validation Tool.
@@ -1416,7 +1414,7 @@
   #define MESH_EDIT_Z_STEP  0.025 // (mm) Step size while manually probing Z axis.
   #define LCD_PROBE_Z_RANGE 4     // (mm) Z Range centered on Z_MIN_POS for LCD Z adjustment
   // KAD: 1100 bytes
-  #if DISABLED(KAD_BLTOUCH)
+  #if DISABLED(KAD_BLTOUCH) || ENABLED(KAD_SKR_MINI_NANOLIB)
     #define MESH_EDIT_MENU        // Add a menu to edit mesh points
   #endif
 #endif

@@ -731,7 +731,7 @@
   //#define BLTOUCH_HS_MODE
 
   // Safety: Enable voltage mode settings in the LCD menu.
-  #if ENABLED(KAD_BLTOUCH)
+  #if BOTH(KAD_BLTOUCH, KAD_SKR_MINI_NANOLIB)
     #define BLTOUCH_LCD_VOLTAGE_MENU
   #endif
 
@@ -800,9 +800,9 @@
 //
 // Add the G35 command to read bed corners to help adjust screws. Requires a bed probe.
 //
-// #if BOTH(KAD_SKR_MINI, KAD_BLTOUCH)
-//   #define ASSISTED_TRAMMING
-// #endif
+#if BOTH(KAD_SKR_MINI_NANOLIB, KAD_BLTOUCH)
+  #define ASSISTED_TRAMMING
+#endif
 #if ENABLED(ASSISTED_TRAMMING)
 
   // Define positions for probing points, use the hotend as reference not the sensor.
@@ -1083,14 +1083,16 @@
 
   // Add Probe Z Offset calibration to the Z Probe Offsets menu
   #if HAS_BED_PROBE
-    //#define PROBE_OFFSET_WIZARD
+    #if BOTH(KAD_BLTOUCH, KAD_SKR_MINI_NANOLIB)
+      #define PROBE_OFFSET_WIZARD
+    #endif
     #if ENABLED(PROBE_OFFSET_WIZARD)
       #define PROBE_OFFSET_START -4.0   // Estimated nozzle-to-probe Z offset, plus a little extra
     #endif
   #endif
 
   // Include a page of printer information in the LCD Main Menu
-  #if DISABLED(KAD_BLTOUCH)
+  #if DISABLED(KAD_BLTOUCH) || ENABLED(KAD_SKR_MINI_NANOLIB)
     #define LCD_INFO_MENU
   #endif
   #if ENABLED(LCD_INFO_MENU)
@@ -1098,7 +1100,7 @@
   #endif
 
   // BACK menu items keep the highlight at the top
-  #if DISABLED(KAD_BLTOUCH)
+  #if DISABLED(KAD_BLTOUCH) || ENABLED(KAD_SKR_MINI_NANOLIB)
     #define TURBO_BACK_MENU_ITEM
   #endif
 
@@ -1140,7 +1142,7 @@
 //#define LCD_TIMEOUT_TO_STATUS 15000
 
 // Add an 'M73' G-code to set the current percentage
-#if DISABLED(KAD_BLTOUCH)
+#if DISABLED(KAD_BLTOUCH) || ENABLED(KAD_SKR_MINI_NANOLIB)
   #define LCD_SET_PROGRESS_MANUALLY
 #endif
 
@@ -1281,7 +1283,7 @@
 
   // Enable this option to scroll long filenames in the SD card menu
   // KAD: 200 bytes
-  #if DISABLED(KAD_BLTOUCH)
+  #if DISABLED(KAD_BLTOUCH) || ENABLED(KAD_SKR_MINI_NANOLIB)
     #define SCROLL_LONG_FILENAMES
   #endif
 
@@ -1686,9 +1688,9 @@
  *
  * See https://marlinfw.org/docs/features/lin_advance.html for full instructions.
  */
-// #if ENABLED(KAD_SKR_MINI) && DISABLED(KAD_BLTOUCH)
-//   #define LIN_ADVANCE
-// #endif
+#if ENABLED(KAD_SKR_MINI_NANOLIB)
+  #define LIN_ADVANCE
+#endif
 #if ENABLED(LIN_ADVANCE)
   //#define EXTRA_LIN_ADVANCE_K // Enable for second linear advance constants
   #define LIN_ADVANCE_K 0       // Unit: mm compression per 1mm/s extruder speed
