@@ -1884,7 +1884,7 @@
 // Add individual axis homing items (Home X, Home Y, and Home Z) to the LCD menu.
 //
 // KAD: 300 bytes
-#if DISABLED(KAD_BLTOUCH) || ENABLED(KAD_SKR_MINI)
+#if DISABLED(KAD_BLTOUCH) || ENABLED(KAD_SKR_MINI_NANOLIB)
   #define INDIVIDUAL_AXIS_HOMING_MENU
 #endif
 
