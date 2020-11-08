@@ -1224,8 +1224,12 @@
  * RAMPS-based boards use SERVO3_PIN for the first runout sensor.
  * For other boards you may need to define FIL_RUNOUT_PIN, FIL_RUNOUT2_PIN, etc.
  */
-#if ENABLED(KAD_SKR_MINI_NANOLIB)
+// #if ENABLED(KAD_SKR_MINI_NANOLIB)
+#if ANY(KAD_SKR_MINI_NANOLIB, KAD_SMART_FILAMENT_SENSOR, KAD_FILAMENT_SENSOR)
   #define FILAMENT_RUNOUT_SENSOR
+  #if ENABLED(KAD_MELZI)
+    #define FIL_RUNOUT_PIN 29 // A2
+  #endif
 #endif
 #if ENABLED(FILAMENT_RUNOUT_SENSOR)
   #define FIL_RUNOUT_ENABLED_DEFAULT false // Enable the sensor on startup. Override with M412 followed by M500.
@@ -1236,7 +1240,11 @@
 
   // Set one or more commands to execute on filament runout.
   // (After 'M412 H' Marlin will ask the host to handle the process.)
-  #define FILAMENT_RUNOUT_SCRIPT "M600"
+  #if ENABLED(KAD_MELZI)
+    #define FILAMENT_RUNOUT_SCRIPT "M25"
+  #else
+    #define FILAMENT_RUNOUT_SCRIPT "M600"
+  #endif
 
   // After a runout is detected, continue printing this length of filament
   // before executing the runout script. Useful for a sensor at the end of
@@ -1247,7 +1255,9 @@
     // Enable this option to use an encoder disc that toggles the runout pin
     // as the filament moves. (Be sure to set FILAMENT_RUNOUT_DISTANCE_MM
     // large enough to avoid false positives.)
-    #define FILAMENT_MOTION_SENSOR
+    #if ANY(KAD_SKR_MINI_NANOLIB, KAD_SMART_FILAMENT_SENSOR)
+      #define FILAMENT_MOTION_SENSOR
+    #endif
   #endif
 #endif
 
@@ -1600,6 +1610,7 @@
  *    P2  Raise the nozzle by Z-park amount, limited to Z_MAX_POS.
  */
 #if ENABLED(KAD_SKR_MINI_NANOLIB)
+// #if ANY(KAD_SKR_MINI_NANOLIB, KAD_SMART_FILAMENT_SENSOR)
   #define NOZZLE_PARK_FEATURE
 #endif
 #if ENABLED(NOZZLE_PARK_FEATURE)
