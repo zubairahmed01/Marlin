@@ -1227,8 +1227,11 @@
 // #if ENABLED(KAD_SKR_MINI_NANOLIB)
 #if ANY(KAD_SKR_MINI_NANOLIB, KAD_SMART_FILAMENT_SENSOR, KAD_FILAMENT_SENSOR)
   #define FILAMENT_RUNOUT_SENSOR
-  #if ENABLED(KAD_MELZI)
-    #define FIL_RUNOUT_PIN 29 // A2
+  #if BOTH(KAD_MELZI, KAD_BLTOUCH)
+    // By default sensor would use pin 27. But if BLtouch also enabled, connections are:
+    // BLTouch: Pin 27 and Zmin
+    // Filament sensor: EXT-A2
+    #define FIL_RUNOUT_PIN     29
   #endif
 #endif
 #if ENABLED(FILAMENT_RUNOUT_SENSOR)
@@ -1559,7 +1562,9 @@
  */
 #define EEPROM_SETTINGS     // Persistent storage with M500 and M501
 //#define DISABLE_M503        // Saves ~2700 bytes of PROGMEM. Disable for release!
-#define EEPROM_CHITCHAT       // Give feedback on EEPROM commands. Disable to save PROGMEM.
+#if DISABLED(KAD_MELZI) || NONE(KAD_SMART_FILAMENT_SENSOR, KAD_FILAMENT_SENSOR)
+  #define EEPROM_CHITCHAT       // Give feedback on EEPROM commands. Disable to save PROGMEM.
+#endif
 #define EEPROM_BOOT_SILENT    // Keep M503 quiet and only give errors during first load
 #if ENABLED(EEPROM_SETTINGS)
   //#define EEPROM_AUTO_INIT  // Init EEPROM automatically on any errors.
