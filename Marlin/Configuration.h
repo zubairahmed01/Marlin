@@ -141,7 +141,8 @@
 // Choose the name from boards.h that matches your setup
 #ifndef MOTHERBOARD
   #if ENABLED(KAD_SKR_MINI)
-    #define MOTHERBOARD BOARD_BTT_SKR_MINI_E3_V2_0
+    //#define MOTHERBOARD BOARD_BTT_SKR_MINI_E3_V2_0
+    #define MOTHERBOARD BOARD_BTT_SKR_MINI_MZ_V1_0
   #else
     #define MOTHERBOARD BOARD_MELZI_CREALITY
   #endif
