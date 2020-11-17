@@ -395,7 +395,7 @@
  * The fan turns on automatically whenever any driver is enabled and turns
  * off (or reduces to idle speed) shortly after drivers are turned off.
  */
-#if ENABLED(KAD_SKR_MINI)
+#if ENABLED(KAD_SKR_MINI) && DISABLED(KAD_SKR_E0_FAN)
   #define USE_CONTROLLER_FAN
 #endif
 #if ENABLED(USE_CONTROLLER_FAN)
@@ -415,7 +415,9 @@
 // When first starting the main fan, run it at full speed for the
 // given number of milliseconds.  This gets the fan spinning reliably
 // before setting a PWM value. (Does not work with software PWM for fan on Sanguinololu)
-//#define FAN_KICKSTART_TIME 100
+#if ENABLED(KAD_SKR_MINI)
+  #define FAN_KICKSTART_TIME 100
+#endif
 
 // Some coolers may require a non-zero "off" state.
 //#define FAN_OFF_PWM  1
@@ -432,7 +434,10 @@
  *
  * Define one or both of these to override the default 0-255 range.
  */
-//#define FAN_MIN_PWM 50
+#if ENABLED(KAD_SKR_MINI)
+  // KAD: minimum rate for most of 2-pin fans is ~20%.
+  #define FAN_MIN_PWM 50
+#endif
 //#define FAN_MAX_PWM 128
 
 /**
@@ -476,7 +481,12 @@
  * Multiple extruders can be assigned to the same pin in which case
  * the fan will turn on when any selected extruder is above the threshold.
  */
-#define E0_AUTO_FAN_PIN -1
+#if BOTH(KAD_SKR_MINI, KAD_SKR_E0_FAN)
+  // Use controller fan (FAN1) as automatic heat sink fan
+  #define E0_AUTO_FAN_PIN CONTROLLER_FAN_PIN
+#else
+  #define E0_AUTO_FAN_PIN -1
+#endif
 #define E1_AUTO_FAN_PIN -1
 #define E2_AUTO_FAN_PIN -1
 #define E3_AUTO_FAN_PIN -1
@@ -1108,7 +1118,9 @@
    * LED Control Menu
    * Add LED Control to the LCD menu
    */
-  //#define LED_CONTROL_MENU
+  #if ENABLED(KAD_SKR_MINI_NANOLIB)
+    #define LED_CONTROL_MENU
+  #endif
   #if ENABLED(LED_CONTROL_MENU)
     #define LED_COLOR_PRESETS                 // Enable the Preset Color menu option
     //#define NEO2_COLOR_PRESETS              // Enable a second NeoPixel Preset Color menu option
@@ -1117,7 +1129,7 @@
       #define LED_USER_PRESET_GREEN      128  // User defined GREEN value
       #define LED_USER_PRESET_BLUE         0  // User defined BLUE value
       #define LED_USER_PRESET_WHITE      255  // User defined WHITE value
-      #define LED_USER_PRESET_BRIGHTNESS 255  // User defined intensity
+      #define LED_USER_PRESET_BRIGHTNESS 127  // User defined intensity
       //#define LED_USER_PRESET_STARTUP       // Have the printer display the user preset color on startup
     #endif
     #if ENABLED(NEO2_COLOR_PRESETS)
@@ -3632,7 +3644,9 @@
 //
 // M42 - Set pin states
 //
-//#define DIRECT_PIN_CONTROL
+#if ENABLED(KAD_SKR_MINI_NANOLIB)
+  #define DIRECT_PIN_CONTROL
+#endif
 
 //
 // M43 - display pin status, toggle pins, watch pins, watch endstops & toggle LED, test servo probe

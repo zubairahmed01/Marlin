@@ -98,7 +98,9 @@
 #endif
 
 // Show the bitmap in Marlin/_Statusscreen.h on the status screen.
-#define CUSTOM_STATUS_SCREEN_IMAGE
+// #if DISABLED(KAD_MELZI_BED)
+  #define CUSTOM_STATUS_SCREEN_IMAGE
+// #endif
 
 // @section machine
 
@@ -352,10 +354,10 @@
 #if ENABLED(PSU_CONTROL)
   #define PSU_ACTIVE_STATE LOW      // Set 'LOW' for ATX, 'HIGH' for X-Box
 
-  #define PSU_DEFAULT_OFF         // Keep power off until enabled directly with M80
-  #define PSU_POWERUP_DELAY 250   // (ms) Delay for the PSU to warm up to full power
+  //#define PSU_DEFAULT_OFF         // Keep power off until enabled directly with M80
+  //#define PSU_POWERUP_DELAY 250   // (ms) Delay for the PSU to warm up to full power
 
-  #define AUTO_POWER_CONTROL      // Enable automatic control of the PS_ON pin
+  //#define AUTO_POWER_CONTROL      // Enable automatic control of the PS_ON pin
   #if ENABLED(AUTO_POWER_CONTROL)
     #define AUTO_POWER_FANS         // Turn on PSU if fans need power
     #define AUTO_POWER_E_FANS
@@ -444,7 +446,7 @@
 #define TEMP_SENSOR_5 0
 #define TEMP_SENSOR_6 0
 #define TEMP_SENSOR_7 0
-#if BOTH(KAD_SKR_MINI, KAD_SKR_BED)
+#if BOTH(KAD_SKR_MINI, KAD_SKR_BED) || ENABLED(KAD_MELZI_BED)
 #define TEMP_SENSOR_BED 1
 #else
 #define TEMP_SENSOR_BED 0
@@ -873,7 +875,7 @@
  // KAD: 3300 bytes
 // #if DISABLED(KAD_BLTOUCH)
 #define S_CURVE_ACCELERATION
-// #endif
+//#endif
 
 //===========================================================================
 //============================= Z Probe Options =============================
@@ -1562,8 +1564,10 @@
  *   M502 - Revert settings to "factory" defaults. (Follow with M500 to init the EEPROM.)
  */
 #define EEPROM_SETTINGS     // Persistent storage with M500 and M501
-//#define DISABLE_M503        // Saves ~2700 bytes of PROGMEM. Disable for release!
-#if DISABLED(KAD_MELZI) || NONE(KAD_SMART_FILAMENT_SENSOR, KAD_FILAMENT_SENSOR)
+#if BOTH(KAD_BLTOUCH, KAD_MELZI_BED)
+  #define DISABLE_M503        // Saves ~2700 bytes of PROGMEM. Disable for release!
+#endif
+#if DISABLED(KAD_MELZI) || NONE(KAD_SMART_FILAMENT_SENSOR, KAD_FILAMENT_SENSOR, KAD_MELZI_BED)
   #define EEPROM_CHITCHAT       // Give feedback on EEPROM commands. Disable to save PROGMEM.
 #endif
 #define EEPROM_BOOT_SILENT    // Keep M503 quiet and only give errors during first load
@@ -2410,6 +2414,9 @@
 // which is not as annoying as with the hardware PWM. On the other hand, if this frequency
 // is too low, you should also increment SOFT_PWM_SCALE.
 //#define FAN_SOFT_PWM
+#if ENABLED(KAD_SKR_MINI)
+  #define FAN_SOFT_PWM
+#endif
 
 // Incrementing this by 1 will double the software PWM frequency,
 // affecting heaters, and the fan if FAN_SOFT_PWM is enabled.
@@ -2473,7 +2480,7 @@
 #endif
 
 // Support for Adafruit NeoPixel LED driver
-#if ENABLED(KAD_SKR_MINI)
+#if ENABLED(KAD_SKR_MINI_NANOLIB)
   #define NEOPIXEL_LED
 #endif
 #if ENABLED(NEOPIXEL_LED)
@@ -2482,9 +2489,9 @@
   //#define NEOPIXEL2_TYPE NEOPIXEL_TYPE
   //#define NEOPIXEL2_PIN    5
   #define NEOPIXEL_PIXELS 16       // Number of LEDs in the strip. (Longest strip when NEOPIXEL2_SEPARATE is disabled.)
-  #define NEOPIXEL_IS_SEQUENTIAL   // Sequential display for temperature change - LED by LED. Disable to change all LEDs at once.
+  //#define NEOPIXEL_IS_SEQUENTIAL   // Sequential display for temperature change - LED by LED. Disable to change all LEDs at once.
   #define NEOPIXEL_BRIGHTNESS 127  // Initial brightness (0-255)
-  //#define NEOPIXEL_STARTUP_TEST  // Cycle through colors at startup
+  #define NEOPIXEL_STARTUP_TEST  // Cycle through colors at startup
 
   // Support for second Adafruit NeoPixel LED driver controlled with M150 S1 ...
   //#define NEOPIXEL2_SEPARATE
