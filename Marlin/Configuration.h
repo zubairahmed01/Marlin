@@ -351,7 +351,7 @@
  */
 #if ENABLED(KAD_SKR_ENOUGH_FLASH)
   #define PSU_CONTROL
-  #define PSU_NAME "Power Supply:" KAD_STR_PSU
+  #define PSU_NAME "PSU" KAD_STR_PSU
 #endif
 
 #if ENABLED(PSU_CONTROL)
