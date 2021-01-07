@@ -28,7 +28,7 @@ if board == 'btt':
     #     exit(1)
 
 ignores = ("anycubic", "mega", "zero", "zero2", "melzi", "btt", "stdlib", "mini", "e3turbo", "dynamic")
-known = ("24v", "bl", "a2", "zmin", "bed", "e0fan", "ubl", "2e", "2to1", "2mix", "fs", "sfs")
+known = ("24v", "bl", "a2", "zmin", "bed", "e0fan", "ubl", "2e", "2to1", "2mix", "fs", "sfs", "mini12864")
 
 for part in parts[4:]:
     print(part)
@@ -87,6 +87,8 @@ if board == "melzi":
 if board == "btt":
     if "e0fan" in parts:
         defines.append("-DKAD_SKR_E0_FAN")
+    if "mini12864" in parts:
+        defines.append("-DKAD_MINI_12864")
 
 if defines:
     env.Append(BUILD_FLAGS=defines)

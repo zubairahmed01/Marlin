@@ -2208,7 +2208,11 @@
 //=============================================================================
 
 #if ANY(KAD_SKR_MINI, KAD_SKR_E3_TURBO)
-  #define CR10_STOCKDISPLAY
+  #if ENABLED(KAD_MINI_12864)
+    #define FYSETC_MINI_12864_2_1
+  #else
+    #define CR10_STOCKDISPLAY
+  #endif
 #else
   #define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
 #endif
@@ -2695,7 +2699,7 @@
   //#define NEOPIXEL2_PIN    5
   #define NEOPIXEL_PIXELS 16       // Number of LEDs in the strip. (Longest strip when NEOPIXEL2_SEPARATE is disabled.)
   //#define NEOPIXEL_IS_SEQUENTIAL   // Sequential display for temperature change - LED by LED. Disable to change all LEDs at once.
-  #define NEOPIXEL_BRIGHTNESS 127  // Initial brightness (0-255)
+  #define NEOPIXEL_BRIGHTNESS 96  // Initial brightness (0-255)
   #define NEOPIXEL_STARTUP_TEST  // Cycle through colors at startup
 
   // Support for second Adafruit NeoPixel LED driver controlled with M150 S1 ...

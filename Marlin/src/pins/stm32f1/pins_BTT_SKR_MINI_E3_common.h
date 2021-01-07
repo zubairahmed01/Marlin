@@ -176,6 +176,56 @@
     #define FORCE_SOFT_SPI
     #define LCD_BACKLIGHT_PIN               -1
 
+  #elif ENABLED(FYSETC_MINI_12864_2_1)
+
+    //#error "CAUTION! FYSETC_MINI_12864_2_1 requires wiring modifications. See 'pins_BTT_SKR_MINI_E3_common.h' for details. Comment out this line to continue."
+    /** FYSETC MINI 1264 V2.1 display pinout
+      *
+      *                 Board                                   Display
+      *                 _____                         _____                    _____
+      *             5V | 1 2 | GND               VCC | 1 2 | GND         KILL | 1 2 | GND
+      *  LCD_EN EXP1_3 | 3 4 | PB8 LCD_RS   BLUE N/A | 3 4 | N/A GREEN   RST  | 3 4 | CD
+      *    LCD_D4  PB9 | 5 6 | PA10 BTN_EN2  RED NPX | 5 6 | LCD_RST     MOSI | 5 6 | BTN_EN2
+      *          RESET | 7 8 | PA9 BTN_EN1    LCD A0 | 7 8 | LCD_CS      SS   | 7 8 | BTN_EN1
+      * BTN-ENC EXP1_9 | 9 10| PB5 BEEPER    BTN_ENC | 9 10| BEEPER      SCK  | 9 10| MISO
+      *                 -----                         -----                    -----
+      *                  EXP3                          EXP1                     EXP2
+      *
+      * Needs custom cable:
+      *
+      *    Board   Adapter   Display
+      *           _________
+      *   EXP3-1 ----------- EXP1-1 VCC
+      *   EXP3-2 ----------- EXP1-2 GND
+      *   EXP3-3 ----------- EXP1-8 DOGLCD_CS
+      *   EXP3-4 ----------- EXP1-7 DOGLCD_A0
+      *   EXP3-5 ----------- EXP1-6 LCD_RESET_PIN
+      *   EXP3-6 ----------- EXP2-6 BTN_EN2
+      *   EXP3-7 ----------- EXP2-3 RESET
+      *   EXP3-8 ----------- EXP2-8 BTN_EN1
+      *   EXP3-9 ----------- EXP1-9 BTN_ENC
+      *  EXP3-10 ----------- EXP1-10 ex-BEEPER -> NEOPIXEL_PIN
+      *  SPI SCK ----------- EXP2-9 SCK
+      * SPI MOSI ----------- EXP2-5 MOSI
+      */
+
+    #define BTN_ENC                         EXP1_9
+    #define BTN_EN1                         PA9
+    #define BTN_EN2                         PA10
+
+    #define DOGLCD_CS                       EXP1_3
+    #define DOGLCD_A0                       PB8
+    #define LCD_RESET_PIN                   PB9
+
+    #define FORCE_SOFT_SPI
+    #define LCD_BACKLIGHT_PIN               -1
+    #define LCD_CONTRAST_MIN                200
+
+    #ifdef NEOPIXEL_PIN
+      #undef NEOPIXEL_PIN
+    #endif
+    #define NEOPIXEL_PIN                    PB5
+
   #elif IS_TFTGLCD_PANEL
 
     #if ENABLED(TFTGLCD_PANEL_SPI)
@@ -216,7 +266,7 @@
     #endif
 
   #else
-    #error "Only CR10_STOCKDISPLAY, ZONESTAR_LCD, ENDER2_STOCKDISPLAY, MKS_MINI_12864, and TFTGLCD_PANEL_(SPI|I2C) are currently supported on the BIGTREE_SKR_MINI_E3."
+    #error "Only CR10_STOCKDISPLAY, ZONESTAR_LCD, ENDER2_STOCKDISPLAY, MKS_MINI_12864, FYSETC_MINI_12864_2_1, and TFTGLCD_PANEL_(SPI|I2C) are currently supported on the BIGTREE_SKR_MINI_E3."
   #endif
 
 #endif // HAS_WIRED_LCD
