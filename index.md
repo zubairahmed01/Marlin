@@ -1,37 +1,39 @@
-## Welcome to GitHub Pages
+## Marlin firmware for Anycubic Mega Zero printers
 
-You can use the [editor on GitHub](https://github.com/kad/Marlin/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+[This repository](https://github.com/kad/Marlin) hosts copy of [upstream Marlin firmware](https://github.com/MarlinFirmware/Marlin) with prepared configuration files for Anycubic Mega Zero and Mega Zero 2.0 printers, for stock boards and as well for some 3rd party upgraded boards (SKR mini MZ, SKR mini E3 2.0, SKR E3 Turbo, ...)
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+More detailed information about build variants, building and flashing that firmware can be found on [Wiki pages](https://github.com/kad/Marlin/wiki)
 
-### Markdown
+Additional documentation can be found at the [Marlin Home Page](https://marlinfw.org/).
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+### Branches
 
-```markdown
-Syntax highlighted code block
+ - Development branch: [anycubic-kad-bugfix-2.0.x](https://github.com/kad/Marlin/tree/anycubic-kad-bugfix-2.0.x)
+ - Releases 2.0.x branch: [anycubic-kad-2.0.x](https://github.com/kad/Marlin/tree/anycubic-kad-2.0.x)
 
-# Header 1
-## Header 2
-### Header 3
+### Releases
 
-- Bulleted
-- List
+ - Binary releases that corresponds to upstream releases versions are individually tagged and published in [download area](https://github.com/kad/Marlin/releases)
+ - Each binary release has corresponding tag in Git
 
-1. Numbered
-2. List
+## Credits
 
-**Bold** and _Italic_ and `Code` text
+All the credits for the code belongs to [upstream Marlin maintainers](https://github.com/MarlinFirmware/Marlin#credits)
 
-[Link](url) and ![Image](src)
-```
+Additionally: 
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+- Alexander Kanevskiy [[@kad](https://github.com/kad)] - Anycubic Mega Zero configs, additional PlatformIO building scripts and custom logos and bootscreens
 
-### Jekyll Themes
+## License
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/kad/Marlin/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+Content of this repository is published under the same [GPL license](https://github.com/MarlinFirmware/Marlin/blob/2.0.x/LICENSE) as upstream [upstream Marlin firmware](https://github.com/MarlinFirmware/Marlin).
 
-### Support or Contact
+## Legal Disclaimer
 
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+  - This is my hobby project and I'm neither anyhow affilated with any of mentioned hardware vendors nor benefiting from maintenance of this.
+  - I'm maintaining these firmware configs and testing only on my own printer - Anycubic Mega Zero.
+  - Some of the built configurations are tried and verified by [Thingiverse](https://www.thingiverse.com/groups/anycubic-mega-zero/) or [Reddit](https://www.reddit.com/r/AnycubicMegaZero/) Anycubic Mega Zero community members on both Mega Zero and Mega Zero 2.0 printers.
+  - Other files that can be downloaded are automatically built from this source code, but might be untested and might not work as expected or at all.
+  - These firmware configs and all other files in the download area are provided free of charge with not warranty or guarantee from me.
+  - I'm not liable for any damage to your printer, person, or any other property due to use of these firmware configurations.
+  - If you do not agree to those terms, then do not use content of this repository.
