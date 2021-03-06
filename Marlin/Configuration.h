@@ -1461,7 +1461,11 @@
   #if ENABLED(KAD_MELZI)
     #define FILAMENT_RUNOUT_SCRIPT "M25"
   #else
-    #define FILAMENT_RUNOUT_SCRIPT "M600"
+    #if NUM_RUNOUT_SENSORS > 1
+      #define FILAMENT_RUNOUT_SCRIPT "M600 T%c"
+    #else
+      #define FILAMENT_RUNOUT_SCRIPT "M600"
+    #endif
   #endif
 
   // After a runout is detected, continue printing this length of filament
