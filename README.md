@@ -16,6 +16,10 @@ Additional documentation can be found at the [Marlin Home Page](https://marlinfw
  - Binary releases that corresponds to upstream releases versions are individually tagged and published in [download area](https://github.com/kad/Marlin/releases)
  - Each binary release has corresponding tag in Git
 
+### Development builds
+
+ - Development snapshot builds available [from temporary development download area](http://orava.kad.name/3d/)
+
 ## Credits
 
 All the credits for the code belongs to [upstream Marlin maintainers](https://github.com/MarlinFirmware/Marlin#credits)
