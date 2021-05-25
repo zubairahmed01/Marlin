@@ -1464,13 +1464,26 @@
 
 // @section machine
 
+#if ANY(KAD_SKR_BED, KAD_MELZI_BED) && DISABLED(KAD_PSU_24V)
+    // KAD: Assuming 220x220 heated bed mod on MZ1
+    #define X_BED_SIZE 220
+    #define Y_BED_SIZE 220
+    #define X_MIN_POS -12
+    #define Y_MIN_POS -7
+#else
+    #define X_BED_SIZE 225
+    #define Y_BED_SIZE 225
+    #define X_MIN_POS -7
+    #define Y_MIN_POS -2
+#endif
+
 // The size of the printable area
-#define X_BED_SIZE 225
-#define Y_BED_SIZE 225
+//#define X_BED_SIZE 225
+//#define Y_BED_SIZE 225
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
-#define X_MIN_POS -7
-#define Y_MIN_POS -2
+//#define X_MIN_POS -7
+//#define Y_MIN_POS -2
 #define Z_MIN_POS 0
 #define X_MAX_POS X_BED_SIZE
 #define Y_MAX_POS Y_BED_SIZE
