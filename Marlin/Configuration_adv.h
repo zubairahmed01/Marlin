@@ -3711,9 +3711,9 @@
 /**
  * Disable all Volumetric extrusion options
  */
-#if DISABLED(KAD_SKR_ENOUGH_FLASH)
-  #define NO_VOLUMETRICS
-#endif
+//#if DISABLED(KAD_SKR_ENOUGH_FLASH)
+#define NO_VOLUMETRICS
+//#endif
 
 #if DISABLED(NO_VOLUMETRICS)
   /**
