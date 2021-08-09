@@ -1463,7 +1463,9 @@
 // @section extruder
 
 #define DISABLE_E false             // Disable the extruder when not stepping
-#define DISABLE_INACTIVE_EXTRUDER   // Keep only the active extruder enabled
+#if DISABLED(KAD_SKR_E3_TURBO_2MIX)
+  #define DISABLE_INACTIVE_EXTRUDER   // Keep only the active extruder enabled
+#endif
 
 // @section machine
 
