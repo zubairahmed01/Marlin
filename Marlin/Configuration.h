@@ -1780,7 +1780,7 @@
    * Enable the G26 Mesh Validation Pattern tool.
    */
   // KAD: overflow 1.5-2kb
-  #if ENABLED(KAD_SKR_ENOUGH_FLASH)
+  #if ENABLED(KAD_SKR_ENOUGH_FLASH) && DISABLED(HAL_STM32)
     #define G26_MESH_VALIDATION
   #endif
   #if ENABLED(G26_MESH_VALIDATION)
