@@ -702,13 +702,14 @@
   #if ENABLED(PID_PARAMS_PER_HOTEND)
     // Specify up to one value per hotend here, according to your setup.
     // If there are fewer values, the last one applies to the remaining hotends.
-    #define DEFAULT_Kp_LIST {  17.72,  17.72 }
-    #define DEFAULT_Ki_LIST {   1.18,   1.18 }
-    #define DEFAULT_Kd_LIST {  66.76,  66.76 }
+    #define DEFAULT_Kp_LIST {  28.23,  28.23 }
+    #define DEFAULT_Ki_LIST {  3.35,   3.35 }
+    #define DEFAULT_Kd_LIST {  59.56,  59.56 }
   #else
-    #define DEFAULT_Kp  17.72
-    #define DEFAULT_Ki   1.18
-    #define DEFAULT_Kd  66.76
+    // these values generated with CR10-pro hotend using (M303 E0 C8 S210)
+    #define DEFAULT_Kp 28.23
+    #define DEFAULT_Ki 3.35
+    #define DEFAULT_Kd 59.56
   #endif
 #endif
 
@@ -797,11 +798,16 @@
   //#define DEFAULT_bedKd 305.4
 
   // Mega Zero 2 stock bed/board/firmware, 70 degrees.
-  #define DEFAULT_bedKp 350
-  #define DEFAULT_bedKi 63
-  #define DEFAULT_bedKd 452
+  // #define DEFAULT_bedKp 350
+  // #define DEFAULT_bedKi 63
+  // #define DEFAULT_bedKd 452
 
   // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
+
+  // generated with command(M303 E-1 C8 S60)
+  #define DEFAULT_bedKp 55.78
+  #define DEFAULT_bedKi 9.88
+  #define DEFAULT_bedKd 210.00
 #endif // PIDTEMPBED
 
 //===========================================================================
