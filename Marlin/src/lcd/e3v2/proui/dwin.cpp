@@ -154,8 +154,8 @@
 #endif
 
 // Editable temperature limits
-#define MIN_ETEMP  0
-#define MAX_ETEMP  (thermalManager.hotend_maxtemp[0] - (HOTEND_OVERSHOOT))
+#define MIN_ETEMP   0
+#define MAX_ETEMP   thermalManager.hotend_max_target(0)
 #define MIN_BEDTEMP 0
 #define MAX_BEDTEMP BED_MAX_TARGET
 
@@ -336,7 +336,7 @@ void ICON_Button(const bool selected, const int iconid, const frame_rect_t &ico,
 //
 void ICON_Print() {
   constexpr frame_rect_t ico = { 17, 110, 110, 100 };
-  constexpr text_info_t txt = { 1, { 405, TERN(USE_STOCK_DWIN_SET, 446, 447) }, 27, 15 };
+  constexpr text_info_t txt = { 1, { 405, 447 }, 27, 15 };
   ICON_Button(select_page.now == PAGE_PRINT, ICON_Print_0, ico, txt, GET_TEXT_F(MSG_BUTTON_PRINT));
 }
 
@@ -345,7 +345,7 @@ void ICON_Print() {
 //
 void ICON_Prepare() {
   constexpr frame_rect_t ico = { 145, 110, 110, 100 };
-  constexpr text_info_t txt = { 31, { 405, TERN(USE_STOCK_DWIN_SET, 446, 447) }, 27, 15 };
+  constexpr text_info_t txt = { 31, { 405, 447 }, 27, 15 };
   ICON_Button(select_page.now == PAGE_PREPARE, ICON_Prepare_0, ico, txt, GET_TEXT_F(MSG_PREPARE));
 }
 
@@ -354,7 +354,7 @@ void ICON_Prepare() {
 //
 void ICON_Control() {
   constexpr frame_rect_t ico = { 17, 226, 110, 100 };
-  constexpr text_info_t txt = { 61, { 405, TERN(USE_STOCK_DWIN_SET, 446, 447) }, 27, 15 };
+  constexpr text_info_t txt = { 61, { 405, 447 }, 27, 15 };
   ICON_Button(select_page.now == PAGE_CONTROL, ICON_Control_0, ico, txt, GET_TEXT_F(MSG_CONTROL));
 }
 
@@ -363,7 +363,7 @@ void ICON_Control() {
 //
 void ICON_AdvSettings() {
   constexpr frame_rect_t ico = { 145, 226, 110, 100 };
-  constexpr text_info_t txt = { 91, { 405, TERN(USE_STOCK_DWIN_SET, 446, 447) }, 27, 15 };
+  constexpr text_info_t txt = { 91, { 405, 447 }, 27, 15 };
   ICON_Button(select_page.now == PAGE_ADVANCE, ICON_Info_0, ico, txt, GET_TEXT_F(MSG_BUTTON_ADVANCED));
 }
 
@@ -372,7 +372,7 @@ void ICON_AdvSettings() {
 //
 void ICON_Tune() {
   constexpr frame_rect_t ico = { 8, 232, 80, 100 };
-  constexpr text_info_t txt = { 121, { 405, TERN(USE_STOCK_DWIN_SET, 446, 447) }, 27, 15 };
+  constexpr text_info_t txt = { 121, { 405, 447 }, 27, 15 };
   ICON_Button(select_print.now == PRINT_SETUP, ICON_Setup_0, ico, txt, GET_TEXT_F(MSG_TUNE));
 }
 
@@ -381,7 +381,7 @@ void ICON_Tune() {
 //
 void ICON_Pause() {
   constexpr frame_rect_t ico = { 96, 232, 80, 100 };
-  constexpr text_info_t txt = { 181, { 405, TERN(USE_STOCK_DWIN_SET, 446, 447) }, 27, 15 };
+  constexpr text_info_t txt = { 181, { 405, 447 }, 27, 15 };
   ICON_Button(select_print.now == PRINT_PAUSE_RESUME, ICON_Pause_0, ico, txt, GET_TEXT_F(MSG_BUTTON_PAUSE));
 }
 
@@ -390,7 +390,7 @@ void ICON_Pause() {
 //
 void ICON_Resume() {
   constexpr frame_rect_t ico = { 96, 232, 80, 100 };
-  constexpr text_info_t txt = { 1, { 405, TERN(USE_STOCK_DWIN_SET, 446, 447) }, 27, 15 };
+  constexpr text_info_t txt = { 1, { 405, 447 }, 27, 15 };
   ICON_Button(select_print.now == PRINT_PAUSE_RESUME, ICON_Continue_0, ico, txt, GET_TEXT_F(MSG_BUTTON_RESUME));
 }
 
@@ -399,7 +399,7 @@ void ICON_Resume() {
 //
 void ICON_Stop() {
   constexpr frame_rect_t ico = { 184, 232, 80, 100 };
-  constexpr text_info_t txt = { 151, { 405, TERN(USE_STOCK_DWIN_SET, 446, 447) }, 27, 12 };
+  constexpr text_info_t txt = { 151, { 405, 447 }, 27, 12 };
   ICON_Button(select_print.now == PRINT_STOP, ICON_Stop_0, ico, txt, GET_TEXT_F(MSG_BUTTON_STOP));
 }
 
@@ -482,8 +482,7 @@ void dwinResetStatusLine() {
 // Djb2 hash algorithm
 uint32_t getHash(char * str) {
   uint32_t hash = 5381;
-  char c;
-  while ((c = *str++)) hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+  for (char c; (c = *str++);) hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
   return hash;
 }
 
@@ -1943,13 +1942,7 @@ void dwinRedrawScreen() {
       case PAUSE_MESSAGE_INSERT:   dwinPopupPause(GET_TEXT_F(MSG_FILAMENT_CHANGE_INSERT), BTN_Continue); break;
       case PAUSE_MESSAGE_LOAD:     dwinPopupPause(GET_TEXT_F(MSG_FILAMENT_CHANGE_LOAD));   break;
       case PAUSE_MESSAGE_UNLOAD:   dwinPopupPause(GET_TEXT_F(MSG_FILAMENT_CHANGE_UNLOAD)); break;                // Unload of pause and Unload of M702
-      case PAUSE_MESSAGE_PURGE:
-        #if ENABLED(ADVANCED_PAUSE_CONTINUOUS_PURGE)
-          dwinPopupPause(GET_TEXT_F(MSG_FILAMENT_CHANGE_CONT_PURGE));
-        #else
-          dwinPopupPause(GET_TEXT_F(MSG_FILAMENT_CHANGE_PURGE));
-        #endif
-        break;
+      case PAUSE_MESSAGE_PURGE:    dwinPopupPause(GET_TEXT_F(TERN(ADVANCED_PAUSE_CONTINUOUS_PURGE, MSG_FILAMENT_CHANGE_CONT_PURGE, MSG_FILAMENT_CHANGE_PURGE))); break;
       case PAUSE_MESSAGE_OPTION:   gotoFilamentPurge(); break;
       case PAUSE_MESSAGE_RESUME:   dwinPopupPause(GET_TEXT_F(MSG_FILAMENT_CHANGE_RESUME)); break;
       case PAUSE_MESSAGE_HEAT:     dwinPopupPause(GET_TEXT_F(MSG_FILAMENT_CHANGE_HEAT), BTN_Continue);   break;
@@ -2313,7 +2306,7 @@ void setMoveZ() { hmiValue.axis = Z_AXIS; setPFloatOnClick(Z_MIN_POS, Z_MAX_POS,
   #endif
 #endif
 
-#if ENABLED(ADVANCED_PAUSE_FEATURE)
+#if ENABLED(CONFIGURE_FILAMENT_CHANGE)
   void setFilLoad()   { setPFloatOnClick(0, EXTRUDE_MAXLENGTH, UNITFDIGITS); }
   void setFilUnload() { setPFloatOnClick(0, EXTRUDE_MAXLENGTH, UNITFDIGITS); }
 #endif
@@ -3141,7 +3134,7 @@ void drawControlMenu() {
     #if ENABLED(EEPROM_SETTINGS)
       MENU_ITEM(ICON_WriteEEPROM, MSG_STORE_EEPROM, onDrawWriteEeprom, writeEEPROM);
       MENU_ITEM(ICON_ReadEEPROM, MSG_LOAD_EEPROM, onDrawReadEeprom, readEEPROM);
-      MENU_ITEM(ICON_ResumeEEPROM, MSG_RESTORE_DEFAULTS, onDrawResetEeprom, resetEEPROM);
+      MENU_ITEM(ICON_ResetEEPROM, MSG_RESTORE_DEFAULTS, onDrawResetEeprom, resetEEPROM);
     #endif
     MENU_ITEM(ICON_Reboot, MSG_RESET_PRINTER, onDrawMenuItem, rebootPrinter);
     MENU_ITEM(ICON_Info, MSG_INFO_SCREEN, onDrawInfoSubMenu, gotoInfoMenu);
@@ -3309,7 +3302,7 @@ void drawFilSetMenu() {
     #if ENABLED(PREVENT_COLD_EXTRUSION)
       EDIT_ITEM(ICON_ExtrudeMinT, MSG_EXTRUDER_MIN_TEMP, onDrawPIntMenu, setExtMinT, &hmiData.extMinT);
     #endif
-    #if ENABLED(ADVANCED_PAUSE_FEATURE)
+    #if ENABLED(CONFIGURE_FILAMENT_CHANGE)
       EDIT_ITEM(ICON_FilLoad, MSG_FILAMENT_LOAD, onDrawPFloatMenu, setFilLoad, &fc_settings[0].load_length);
       EDIT_ITEM(ICON_FilUnload, MSG_FILAMENT_UNLOAD, onDrawPFloatMenu, setFilUnload, &fc_settings[0].unload_length);
     #endif
@@ -3535,7 +3528,9 @@ void drawMotionMenu() {
     #if ENABLED(ADAPTIVE_STEP_SMOOTHING)
       EDIT_ITEM(ICON_UBLActive, MSG_STEP_SMOOTHING, onDrawChkbMenu, setAdaptiveStepSmoothing, &hmiData.adaptiveStepSmoothing);
     #endif
-    MENU_ITEM(ICON_Step, MSG_STEPS_PER_MM, onDrawSteps, drawStepsMenu);
+    #if ENABLED(EDITABLE_STEPS_PER_UNIT)
+      MENU_ITEM(ICON_Step, MSG_STEPS_PER_MM, onDrawSteps, drawStepsMenu);
+    #endif
     EDIT_ITEM(ICON_Flow, MSG_FLOW, onDrawPIntMenu, setFlow, &planner.flow_percentage[0]);
     EDIT_ITEM(ICON_Speed, MSG_SPEED, onDrawPIntMenu, setSpeed, &feedrate_percentage);
   }
@@ -3710,25 +3705,29 @@ void drawMaxAccelMenu() {
 
 #endif // CLASSIC_JERK
 
-void drawStepsMenu() {
-  checkkey = ID_Menu;
-  if (SET_MENU_R(stepsMenu, selrect({1, 16, 28, 13}), MSG_STEPS_PER_MM, 5)) {
-    BACK_ITEM(drawMotionMenu);
-    #if HAS_X_AXIS
-      EDIT_ITEM(ICON_StepX, MSG_A_STEPS, onDrawStepsX, setStepsX, &planner.settings.axis_steps_per_mm[X_AXIS]);
-    #endif
-    #if HAS_Y_AXIS
-      EDIT_ITEM(ICON_StepY, MSG_B_STEPS, onDrawStepsY, setStepsY, &planner.settings.axis_steps_per_mm[Y_AXIS]);
-    #endif
-    #if HAS_Z_AXIS
-      EDIT_ITEM(ICON_StepZ, MSG_C_STEPS, onDrawStepsZ, setStepsZ, &planner.settings.axis_steps_per_mm[Z_AXIS]);
-    #endif
-    #if HAS_HOTEND
-      EDIT_ITEM(ICON_StepE, MSG_E_STEPS, onDrawStepsE, setStepsE, &planner.settings.axis_steps_per_mm[E_AXIS]);
-    #endif
+#if ENABLED(EDITABLE_STEPS_PER_UNIT)
+
+  void drawStepsMenu() {
+    checkkey = ID_Menu;
+    if (SET_MENU_R(stepsMenu, selrect({1, 16, 28, 13}), MSG_STEPS_PER_MM, 5)) {
+      BACK_ITEM(drawMotionMenu);
+      #if HAS_X_AXIS
+        EDIT_ITEM(ICON_StepX, MSG_A_STEPS, onDrawStepsX, setStepsX, &planner.settings.axis_steps_per_mm[X_AXIS]);
+      #endif
+      #if HAS_Y_AXIS
+        EDIT_ITEM(ICON_StepY, MSG_B_STEPS, onDrawStepsY, setStepsY, &planner.settings.axis_steps_per_mm[Y_AXIS]);
+      #endif
+      #if HAS_Z_AXIS
+        EDIT_ITEM(ICON_StepZ, MSG_C_STEPS, onDrawStepsZ, setStepsZ, &planner.settings.axis_steps_per_mm[Z_AXIS]);
+      #endif
+      #if HAS_HOTEND
+        EDIT_ITEM(ICON_StepE, MSG_E_STEPS, onDrawStepsE, setStepsE, &planner.settings.axis_steps_per_mm[E_AXIS]);
+      #endif
+    }
+    updateMenu(stepsMenu);
   }
-  updateMenu(stepsMenu);
-}
+
+#endif
 
 //=============================================================================
 // UI editable custom colors
@@ -3957,8 +3956,8 @@ void drawStepsMenu() {
     if (SET_MENU(zOffsetWizMenu, MSG_PROBE_WIZARD, 4)) {
       BACK_ITEM(drawPrepareMenu);
       MENU_ITEM(ICON_Homing, MSG_AUTO_HOME, onDrawMenuItem, autoHome);
-      MENU_ITEM_F(ICON_MoveZ0, "Move Z to Home", onDrawMenuItem, setMoveZto0);
-      EDIT_ITEM(ICON_Zoffset, MSG_ZPROBE_ZOFFSET, onDrawPFloat2Menu, setZOffset, &BABY_Z_VAR);
+      MENU_ITEM(ICON_MoveZ0, MSG_MOVE_NOZZLE_TO_BED, onDrawMenuItem, setMoveZto0);
+      EDIT_ITEM(ICON_Zoffset, MSG_XATC_UPDATE_Z_OFFSET, onDrawPFloat2Menu, setZOffset, &BABY_Z_VAR);
     }
     updateMenu(zOffsetWizMenu);
     if (!axis_is_trusted(Z_AXIS)) LCD_MESSAGE_F("WARNING: Z position unknown, move Z to home");
