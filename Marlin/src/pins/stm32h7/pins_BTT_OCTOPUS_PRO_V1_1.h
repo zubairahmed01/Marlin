@@ -42,3 +42,5 @@
 #ifndef NEOPIXEL_PIN
   #define NEOPIXEL_PIN                      PB10
 #endif
+
+#define USES_DIAG_PINS
