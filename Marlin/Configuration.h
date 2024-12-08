@@ -22,7 +22,9 @@
 #pragma once
 
 // Enable this option for BLTouch support
-#define E7_USE_BLTOUCH
+#define E7_USE_ABL
+#define E7_USE_MICRO_PROBE
+// #define E7_USE_BLTOUCH
 
 /**
  * Configuration.h
@@ -1243,7 +1245,11 @@
 #define V_MAX_ENDSTOP_HIT_STATE HIGH
 #define W_MIN_ENDSTOP_HIT_STATE HIGH
 #define W_MAX_ENDSTOP_HIT_STATE HIGH
-#define Z_MIN_PROBE_ENDSTOP_HIT_STATE HIGH
+#ifdef E7_USE_MICRO_PROBE
+  #define Z_MIN_PROBE_ENDSTOP_HIT_STATE LOW
+#else
+  #define Z_MIN_PROBE_ENDSTOP_HIT_STATE HIGH
+#endif
 
 // Enable this feature if all enabled endstop pins are interrupt-capable.
 // This will remove the need to poll the interrupt pins, saving many CPU cycles.
@@ -1439,7 +1445,7 @@
  * Use G29 repeatedly, adjusting the Z height at each point with movement commands
  * or (with LCD_BED_LEVELING) the LCD controller.
  */
-#ifndef E7_USE_BLTOUCH
+#ifndef E7_USE_ABL
   #define PROBE_MANUALLY
 #endif
 
@@ -1523,7 +1529,9 @@
  * With FT_MOTION requires ENDSTOP_INTERRUPTS_FEATURE
  */
 //#define BIQU_MICROPROBE_V1  // Triggers HIGH
-//#define BIQU_MICROPROBE_V2  // Triggers LOW
+#ifdef E7_USE_MICRO_PROBE
+  #define BIQU_MICROPROBE_V2  // Triggers LOW
+#endif
 
 // A probe that is deployed and stowed with a solenoid pin (SOL1_PIN)
 //#define SOLENOID_PROBE
@@ -1702,7 +1710,7 @@
  * Probe Enable / Disable
  * The probe only provides a triggered signal when enabled.
  */
-//#define PROBE_ENABLE_DISABLE
+#define PROBE_ENABLE_DISABLE
 #if ENABLED(PROBE_ENABLE_DISABLE)
   //#define PROBE_ENABLE_PIN -1   // Override the default pin here
 #endif
@@ -1750,7 +1758,7 @@
 #define PROBE_OFFSET_ZMAX     5   // (mm)
 
 // Enable the M48 repeatability test to test probe accuracy
-//#define Z_MIN_PROBE_REPEATABILITY_TEST
+#define Z_MIN_PROBE_REPEATABILITY_TEST
 
 // Before deploy/stow pause for user confirmation
 //#define PAUSE_BEFORE_DEPLOY_STOW
@@ -1857,7 +1865,7 @@
 //#define Z_CLEARANCE_FOR_HOMING  4   // (mm) Minimal Z height before homing (G28) for Z clearance above the bed, clamps, ...
                                       // You'll need this much clearance above Z_MAX_POS to avoid grinding.
 
-#ifdef E7_USE_BLTOUCH
+#ifdef E7_USE_ABL
   #define Z_AFTER_HOMING         10   // (mm) Height to move to after homing (if Z was homed)
 //#define XY_AFTER_HOMING { 10, 10 }  // (mm) Move to an XY position after homing (and raising Z)
 
@@ -2183,7 +2191,7 @@
   /**
    * Enable the G26 Mesh Validation Pattern tool.
    */
-  //#define G26_MESH_VALIDATION
+  #define G26_MESH_VALIDATION
   #if ENABLED(G26_MESH_VALIDATION)
     #define MESH_TEST_NOZZLE_SIZE    0.4  // (mm) Diameter of primary nozzle.
     #define MESH_TEST_LAYER_HEIGHT   0.2  // (mm) Default layer height for G26.
@@ -2352,7 +2360,7 @@
  * - Allows Z homing only when XY positions are known and trusted.
  * - If stepper drivers sleep, XY homing may be required again before Z homing.
  */
-#ifdef E7_USE_BLTOUCH
+#ifdef E7_USE_ABL
   #define Z_SAFE_HOMING
 #endif
 
