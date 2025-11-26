@@ -27,7 +27,7 @@
 #include "endstops.h"
 #include "stepper.h"
 
-#if HAS_STATUS_MESSAGE
+#if ANY(HAS_STATUS_MESSAGE, VALIDATE_HOMING_ENDSTOPS)
   #include "../lcd/marlinui.h"
 #endif
 
@@ -251,6 +251,41 @@ void Endstops::init() {
 
 } // Endstops::init
 
+void Endstops::factory_reset() {
+  #if ENABLED(X_DUAL_ENDSTOPS)
+    #ifndef X2_ENDSTOP_ADJUSTMENT
+      #define X2_ENDSTOP_ADJUSTMENT 0
+    #endif
+    endstops.x2_endstop_adj = X2_ENDSTOP_ADJUSTMENT;
+  #endif
+
+  #if ENABLED(Y_DUAL_ENDSTOPS)
+    #ifndef Y2_ENDSTOP_ADJUSTMENT
+      #define Y2_ENDSTOP_ADJUSTMENT 0
+    #endif
+    endstops.y2_endstop_adj = Y2_ENDSTOP_ADJUSTMENT;
+  #endif
+
+  #if ENABLED(Z_MULTI_ENDSTOPS)
+    #ifndef Z2_ENDSTOP_ADJUSTMENT
+      #define Z2_ENDSTOP_ADJUSTMENT 0
+    #endif
+    endstops.z2_endstop_adj = Z2_ENDSTOP_ADJUSTMENT;
+    #if NUM_Z_STEPPERS >= 3
+      #ifndef Z3_ENDSTOP_ADJUSTMENT
+        #define Z3_ENDSTOP_ADJUSTMENT 0
+      #endif
+      endstops.z3_endstop_adj = Z3_ENDSTOP_ADJUSTMENT;
+    #endif
+    #if NUM_Z_STEPPERS >= 4
+      #ifndef Z4_ENDSTOP_ADJUSTMENT
+        #define Z4_ENDSTOP_ADJUSTMENT 0
+      #endif
+      endstops.z4_endstop_adj = Z4_ENDSTOP_ADJUSTMENT;
+    #endif
+  #endif
+}
+
 // Called at ~1kHz from Temperature ISR: Poll endstop state if required
 void Endstops::poll() {
 
@@ -274,11 +309,6 @@ void Endstops::enable(const bool onoff) {
   resync();
 }
 
-// Disable / Enable endstops based on ENSTOPS_ONLY_FOR_HOMING and global enable
-void Endstops::not_homing() {
-  enabled = enabled_globally;
-}
-
 #if ENABLED(VALIDATE_HOMING_ENDSTOPS)
   // If the last move failed to trigger an endstop, call kill
   void Endstops::validate_homing_move() {
@@ -297,6 +327,9 @@ void Endstops::not_homing() {
     z_probe_enabled = onoff;
     #if PIN_EXISTS(PROBE_ENABLE)
       WRITE(PROBE_ENABLE_PIN, onoff);
+    #endif
+    #if PROBE_WAKEUP_TIME_MS
+      if (onoff) safe_delay(PROBE_WAKEUP_TIME_MS);
     #endif
     resync();
   }
@@ -519,21 +552,15 @@ void __O2 Endstops::report_states() {
     print_es_state(READ(CALIBRATION_PIN) != CALIBRATION_PIN_INVERTING, F(STR_CALIBRATION));
   #endif
   #if MULTI_FILAMENT_SENSOR
-    #define _CASE_RUNOUT(N) case N: pin = FIL_RUNOUT##N##_PIN; state = FIL_RUNOUT##N##_STATE; break;
-    for (uint8_t i = 1; i <= NUM_RUNOUT_SENSORS; ++i) {
-      pin_t pin;
-      uint8_t state;
-      switch (i) {
-        default: continue;
-        REPEAT_1(NUM_RUNOUT_SENSORS, _CASE_RUNOUT)
-      }
-      SERIAL_ECHOPGM(STR_FILAMENT);
-      if (i > 1) SERIAL_CHAR(' ', '0' + i);
-      print_es_state(extDigitalRead(pin) != state);
-    }
+    #define _CASE_RUNOUT(N) do{ \
+      SERIAL_ECHO(F(STR_FILAMENT)); \
+      if ((N) > 1) SERIAL_CHAR(' ', '0' + char(N)); \
+      print_es_state(!FILAMENT_IS_OUT(N)); \
+    }while(0);
+    REPEAT_1(NUM_RUNOUT_SENSORS, _CASE_RUNOUT)
     #undef _CASE_RUNOUT
   #elif HAS_FILAMENT_SENSOR
-    print_es_state(!FILAMENT_IS_OUT());
+    print_es_state(!FILAMENT_IS_OUT(), F(STR_FILAMENT));
   #endif
 
   TERN_(BLTOUCH, bltouch._reset_SW_mode());
@@ -829,11 +856,14 @@ void Endstops::update() {
     #define PROCESS_ENDSTOP_Z(MINMAX) PROCESS_DUAL_ENDSTOP(Z, MINMAX)
   #endif
 
+  #define AXIS_IS_MOVING(A) TERN(FT_MOTION, ftMotion, stepper).axis_is_moving(_AXIS(A))
+  #define AXIS_DIR_REV(A)  !TERN(FT_MOTION, ftMotion, stepper).motor_direction(A)
+
   #if ENABLED(G38_PROBE_TARGET)
     // For G38 moves check the probe's pin for ALL movement
     if (G38_move && TEST_ENDSTOP(Z_MIN_PROBE) == TERN1(G38_PROBE_AWAY, (G38_move < 4))) {
       G38_did_trigger = true;
-      #define _G38_SET(Q) | (stepper.axis_is_moving(_AXIS(Q)) << _AXIS(Q))
+      #define _G38_SET(Q) | (AXIS_IS_MOVING(Q) << _AXIS(Q))
       #define _G38_RESP(Q) if (moving[_AXIS(Q)]) { _ENDSTOP_HIT(Q, ENDSTOP); planner.endstop_triggered(_AXIS(Q)); }
       const Flags<NUM_AXES> moving = { uvalue_t(NUM_AXES)(0 MAIN_AXIS_MAP(_G38_SET)) };
       MAIN_AXIS_MAP(_G38_RESP);
@@ -847,9 +877,6 @@ void Endstops::update() {
   #endif
 
   // Signal, after validation, if an endstop limit is pressed or not
-
-  #define AXIS_IS_MOVING(A) TERN(FT_MOTION, ftMotion, stepper).axis_is_moving(_AXIS(A))
-  #define AXIS_DIR_REV(A)  !TERN(FT_MOTION, ftMotion, stepper).motor_direction(A)
 
   #if HAS_X_AXIS
     if (AXIS_IS_MOVING(X)) {
